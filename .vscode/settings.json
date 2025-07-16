@@ -1,0 +1,46 @@
+{
+    "idf.customExtraVars": {
+        "IDF_TARGET": "esp32"
+    },
+    "idf.openOcdConfigs": [
+        "interface/ftdi/esp32_devkitj_v1.cfg",
+        "target/esp32.cfg"
+    ],
+    "idf.port": "/dev/ttyUSB0",
+    "files.associations": {
+        "sdkconfig.h": "c",
+        "led.h": "c",
+        "inttypes.h": "c",
+        "task.h": "c",
+        "esp_log.h": "c",
+        "freertos.h": "c",
+        "stdio.h": "c",
+        "nvs_flash.h": "c",
+        "key.h": "c",
+        "gpio.h": "c",
+        "esp_system.h": "c",
+        "motor.h": "c",
+        "ledc.h": "c",
+        "esp_sleep.h": "c",
+        "compare": "c",
+        "cstdint": "c",
+        "mpu6050_6axis_motionapps20.h": "c",
+        "mpu6050.h": "c",
+        "i2cdev.h": "c",
+        "esp_wifi.h": "c",
+        "string.h": "c",
+        "sys.h": "c",
+        "esp_wifi_types.h": "c",
+        "esp_event.h": "c",
+        "text_encoding": "c",
+        "thread": "c",
+        "netdb.h": "c",
+        "errno.h": "c",
+        "wlfl.h": "c"
+    },
+    "cmake.environment": {
+        "IDF_PATH": "/home/superbigcar/esp/esp-idf"
+    },
+    "idf.flashType": "UART",
+    "idf.pythonInstallPath": "/home/bignut/.espressif/python_env/idf5.4_py3.12_env/bin/python"
+}
