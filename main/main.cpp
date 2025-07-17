@@ -18,6 +18,7 @@
 #include "string.h"
 #include "SOCKET.h"
 #include "PCA9685.h"
+#include "SERVO.h"
 
 static const char *TAG = "Example";
 
@@ -43,21 +44,26 @@ extern "C" void app_main(void)
 
     // pca9685_init();
     
-    xTaskCreate(task_PCA9685, "task_PCA9685", 1024 * 2, (void* ) 0, 10, NULL);
+    // xTaskCreate(task_PCA9685, "task_PCA9685", 1024 * 2, (void* ) 0, 10, NULL);
 
+    servo_pwm_init_ltl();
+
+    int init_pwm_n = 25;
+    
     while(1)
     {
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(4000 / portTICK_PERIOD_MS);
 
-        // get_ip_address_uint16(ip_addr);
+        init_pwm_n += 25;
 
-        // printf("%d, %d, %d, %d\n", ip_addr[0], ip_addr[1], ip_addr[2], ip_addr[3]);
+        if(init_pwm_n == 150)
+        {
+            init_pwm_n = 25;
+        }
 
-        // get_ip_address_str(ip_str, 16);
+        servo_set_pwm_0(init_pwm_n * 0.1 * 0.01);
 
-        // printf("%s, %d\n", ip_str, strlen(ip_str));
-
-        printf("1111\n");   
+        printf("%d\n", init_pwm_n);
 
     } 
     

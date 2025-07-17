@@ -36,7 +36,8 @@
         "thread": "c",
         "netdb.h": "c",
         "errno.h": "c",
-        "wlfl.h": "c"
+        "wlfl.h": "c",
+        "random": "c"
     },
     "cmake.environment": {
         "IDF_PATH": "/home/superbigcar/esp/esp-idf"
