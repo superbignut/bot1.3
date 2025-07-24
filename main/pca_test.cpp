@@ -32,9 +32,18 @@
 
 #include "sdkconfig.h"
 
-#define I2C_EXAMPLE_MASTER_SCL_IO   4    /*!< gpio number for I2C master clock */
-#define I2C_EXAMPLE_MASTER_SDA_IO   5    /*!< gpio number for I2C master data  */
-#define I2C_EXAMPLE_MASTER_FREQ_HZ  100000     /*!< I2C master clock frequency */
+/**
+ * Change according to situation.
+ * 
+ */
+#define I2C_EXAMPLE_MASTER_SCL_IO   GPIO_NUM_21    /*!< gpio number for I2C master clock */
+#define I2C_EXAMPLE_MASTER_SDA_IO   GPIO_NUM_22    /*!< gpio number for I2C master data  */
+
+/*
+    Standard I2C Speed.
+*/
+#define I2C_EXAMPLE_MASTER_FREQ_HZ  100000      /*!< I2C master clock frequency */
+
 #define I2C_EXAMPLE_MASTER_NUM      I2C_NUM_0   /*!< I2C port number for master dev */
 #define I2C_EXAMPLE_MASTER_TX_BUF_DISABLE   0   /*!< I2C master do not need buffer */
 #define I2C_EXAMPLE_MASTER_RX_BUF_DISABLE   0   /*!< I2C master do not need buffer */
@@ -47,12 +56,26 @@
 #define ACK_VAL         0x0     /*!< I2C ack value */
 #define NACK_VAL        0x1     /*!< I2C nack value */
 
+#define PCA_9685_FREQ (1 / 0.02) // 20ms is required by servo. so freq is set to 50
+#define SERVO_PERIOD 20 // period = 20ms
+#define PCA_REG_MAX 4096
+#define MIN_DUTY_NUM 0.5 // 0.5ms  angle = 0
+#define MAX_DUTY_NUM 2.5 // 2.5ms  angle = 180
+
+/// @brief Convert angle (0-180)to relative time (0-20ms) to 9685's 4096's register num.
+/// @param angle 
+/// @return 
+int PCA_9685_Angle_to_Num(int angle)
+{
+    float ret = ((angle - 0) * 1.0 / 180 * (MAX_DUTY_NUM - MIN_DUTY_NUM) + MIN_DUTY_NUM) / SERVO_PERIOD * PCA_REG_MAX;
+
+    return (int)ret;
+}
+
 static char tag[] = "PCA9685";
 
 #undef ESP_ERROR_CHECK
 #define ESP_ERROR_CHECK(x)   do { esp_err_t rc = (x); if (rc != ESP_OK) { ESP_LOGE("err", "esp_err_t = %d", rc); assert(0 && #x);} } while(0);
-
-static void i2c_example_master_init(void);
 
 /**
  * @brief i2c master initialization
@@ -67,6 +90,12 @@ static void i2c_example_master_init(void)
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
     conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
     conf.master.clk_speed = I2C_EXAMPLE_MASTER_FREQ_HZ;
+    conf.clk_flags = 0;
+
+    if (conf.master.clk_speed < 100000 || conf.master.clk_speed > 1000000) {
+        printf("Invalid I2C frequency!\n");
+        return;
+    }
     
     i2c_port_t i2c_master_port = I2C_EXAMPLE_MASTER_NUM;
     ESP_ERROR_CHECK(i2c_param_config(i2c_master_port, &conf));  
@@ -84,104 +113,34 @@ void task_PCA9685(void *ignore)
     i2c_example_master_init();
 
     set_pca9685_adress(I2C_ADDRESS);
+
     resetPCA9685();
-    setFrequencyPCA9685(1000);  // 1000 Hz
+
+    setFrequencyPCA9685(PCA_9685_FREQ); // Changed to small one 
+
     turnAllOff();
 
     printf("Finished setup, entering loop now\n");
-
+    
     while(1)
     {
         // fade up and down each pin with static logarithmic table
         // see Weber Fechner Law
-        ret = fade_all_up_down();
 
-        if(ret == ESP_ERR_TIMEOUT)
-        {
-            printf("I2C timeout\n");
-        }
-        else if(ret == ESP_OK)
-        {
-            // all good
-        }
-        else
-        {
-            printf("No ack, sensor not connected...skip...\n");
-        }
 
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-        printf("Blink all pins starting from 0\n");
-
-        for (uint8_t pin = 0; pin < 16; pin++)
-        {
-            printf("Turn LED %d on\n", pin);
-            setPWM(pin, 4096, 0);
-
-            if(ret == ESP_ERR_TIMEOUT)
+        for (int ang = 0; ang < 180; ang++)
+        {   
+            int num = PCA_9685_Angle_to_Num(ang);
+            printf("%d  %d \n", ang, num);
+            for(int pin = 0; pin < 8; ++pin)
             {
-                printf("I2C timeout\n");
+                setPWM(pin, 0, PCA_9685_Angle_to_Num(ang));   // on
             }
-            else if(ret == ESP_OK)
-            {
-                // all good
-            }
-            else
-            {
-                printf("No ack, sensor not connected...skip...\n");
-            }
+            
 
-            vTaskDelay(100/portTICK_PERIOD_MS);
-
-            printf("Turn LED %d off\n", pin);
-            setPWM(pin, 0, 4096);
+            vTaskDelay(200/ portTICK_PERIOD_MS);
         }
 
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-        /*
-        // led turn on and 100ms off, starting from pin 0...15
-        // read back the set value of each pin
-        for (uint8_t pin = 0; pin < 16; pin++)
-        {
-            printf("Turn LED %d on to H(%d) L(%d)\n", pin, 4096-pin, 0);
-            setPWM(pin, 4096-pin, 0);
-
-            uint8_t readPWMValueOn0;
-            uint8_t readPWMValueOn1;
-            uint8_t readPWMValueOff0;
-            uint8_t readPWMValueOff1;
-            uint16_t myDataOn;
-            uint16_t myDataOff;
-
-            ret = getPWMDetail(pin, &readPWMValueOn0, &readPWMValueOn1, &readPWMValueOff0, &readPWMValueOff1);
-            ret = getPWM(pin, &myDataOn, &myDataOff);
-
-            if(ret == ESP_ERR_TIMEOUT)
-            {
-                printf("I2C timeout\n");
-            }
-            else if(ret == ESP_OK)
-            {
-                printf("Read back from device detail: H(%d %d), L(%d %d)\n", readPWMValueOn0, readPWMValueOn1, readPWMValueOff0, readPWMValueOff1);
-
-                printf("Read back from device: H(%d) L(%d)\n", myDataOn, myDataOff);
-            }
-            else
-            {
-                printf("No ack, sensor not connected...skip...\n");
-            }
-
-            vTaskDelay(500/portTICK_PERIOD_MS);
-
-            printf("Turn LED %d off\n", pin);
-            setPWM(pin, 0, 4096);
-        }
-        */
-
-        // write_i2c_register_two_words(LED0_ON_L, 4096, 0);
-        // vTaskDelay(1000/portTICK_PERIOD_MS);
-        // write_i2c_register_two_words(LED0_ON_L, 0, 4096);   
     }
 
     vTaskDelete(NULL);

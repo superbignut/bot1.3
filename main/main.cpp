@@ -44,27 +44,21 @@ extern "C" void app_main(void)
 
     // pca9685_init();
     
-    // xTaskCreate(task_PCA9685, "task_PCA9685", 1024 * 2, (void* ) 0, 10, NULL);
+    xTaskCreate(task_PCA9685, "task_PCA9685", 1024 * 2, (void* ) 0, 10, NULL);
 
-    servo_pwm_init_ltl();
 
-    int init_pwm_n = 25;
+    // task_PCA9685(NULL);
     
+
+
     while(1)
     {
         vTaskDelay(4000 / portTICK_PERIOD_MS);
 
-        init_pwm_n += 25;
-
-        if(init_pwm_n == 150)
-        {
-            init_pwm_n = 25;
-        }
-
-        servo_set_pwm_0(init_pwm_n * 0.1 * 0.01);
-
-        printf("%d\n", init_pwm_n);
-
     } 
+
+
+
+
     
 }
