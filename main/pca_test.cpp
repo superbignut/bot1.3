@@ -36,8 +36,8 @@
  * Change according to situation.
  * 
  */
-#define I2C_EXAMPLE_MASTER_SCL_IO   GPIO_NUM_21    /*!< gpio number for I2C master clock */
-#define I2C_EXAMPLE_MASTER_SDA_IO   GPIO_NUM_22    /*!< gpio number for I2C master data  */
+#define I2C_EXAMPLE_MASTER_SCL_IO   GPIO_NUM_32    /*!< gpio number for I2C master clock */
+#define I2C_EXAMPLE_MASTER_SDA_IO   GPIO_NUM_33    /*!< gpio number for I2C master data  */
 
 /*
     Standard I2C Speed.
@@ -128,18 +128,17 @@ void task_PCA9685(void *ignore)
         // see Weber Fechner Law
 
 
-        for (int ang = 0; ang < 180; ang++)
-        {   
-            int num = PCA_9685_Angle_to_Num(ang);
-            printf("%d  %d \n", ang, num);
+        
+            int num = PCA_9685_Angle_to_Num(90);
+            
             for(int pin = 0; pin < 8; ++pin)
             {
-                setPWM(pin, 0, PCA_9685_Angle_to_Num(ang));   // on
+                setPWM(pin, 0, PCA_9685_Angle_to_Num(90));   // on
             }
             
 
             vTaskDelay(200/ portTICK_PERIOD_MS);
-        }
+        
 
     }
 
