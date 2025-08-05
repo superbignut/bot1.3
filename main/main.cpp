@@ -20,10 +20,14 @@
 #include "PCA9685.h"
 #include "SERVO.h"
 #include "esp_timer.h"
+// #include "OSCILLATOR.h"
+#include "XMONKEY.h"
 
 static const char *TAG = "Example";
 
 extern void task_PCA9685(void *ignore);
+
+MONKEY monkey;
 
 extern "C" void app_main(void)
 {   
@@ -36,6 +40,9 @@ extern "C" void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
+
+    monkey.init();
+
 
     // esp_timer_init(); // 全局初始化，以便后续调用获取 时间函数
 
@@ -56,6 +63,8 @@ extern "C" void app_main(void)
 
     while(1)
     {
+
+        // monkey.walk(1.0, 100);
         vTaskDelay(2000 / portTICK_PERIOD_MS);
         // printf("%lld\n ", esp_timer_get_time());
     }

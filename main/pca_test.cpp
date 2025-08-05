@@ -131,13 +131,24 @@ void task_PCA9685(void *ignore)
         
             int num = PCA_9685_Angle_to_Num(90);
             
-            for(int pin = 0; pin < 8; ++pin)
-            {
-                setPWM(pin, 0, PCA_9685_Angle_to_Num(90));   // on
+            for(int angle = 90; angle < 100; ++angle){
+                for(int pin = 4; pin < 8; ++pin)
+                {
+                    setPWM(pin, 0, PCA_9685_Angle_to_Num(angle));   // on
+                }
+                vTaskDelay(200/ portTICK_PERIOD_MS);
             }
             
+            /* for(int angle = 95; angle > 60; --angle){
+                //for(int pin = 0; pin < 4; ++pin)
+                //{
+                setPWM(2, 0, PCA_9685_Angle_to_Num(angle));   // on
+                //}
+                vTaskDelay(200/ portTICK_PERIOD_MS);
+            } */
+            
 
-            vTaskDelay(200/ portTICK_PERIOD_MS);
+            
         
 
     }

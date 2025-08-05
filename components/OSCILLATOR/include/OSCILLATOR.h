@@ -8,20 +8,15 @@
  * @copyright Copyright (c) 2025
  * 
  */
-#ifndef __LTL_OSCILLATOR__
-#define __LTL_OSCILLATOR__
+#ifndef __LTL_OSCI__
+#define __LTL_OSCI__
 
-#include "driver/gpio.h"
+// #include "driver/gpio.h"
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #ifndef PI
   #define PI 3.14159
 #endif
-
 
 class Oscillator{
 
@@ -56,8 +51,5 @@ class Oscillator{
 };
 
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif

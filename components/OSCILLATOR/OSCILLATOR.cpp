@@ -8,11 +8,13 @@
  * @copyright Copyright (c) 2025
  * 
  */
+
+#include <stdio.h>
 #include "OSCILLATOR.h"
 #include "esp_timer.h"
 #include "math.h"
 
- Oscillator::Oscillator(){
+Oscillator::Oscillator(){
     esp_timer_early_init();
     esp_timer_init(); // init
 
