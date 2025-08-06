@@ -104,6 +104,27 @@ static void i2c_example_master_init(void)
                        I2C_EXAMPLE_MASTER_TX_BUF_DISABLE, 0));
 }
 
+
+void MY_PCA9685_Init()
+{
+    printf("Executing on core %d\n", xPortGetCoreID());
+
+    esp_err_t ret;
+
+    i2c_example_master_init();
+
+    set_pca9685_adress(I2C_ADDRESS);
+
+    resetPCA9685();
+
+    setFrequencyPCA9685(PCA_9685_FREQ); // Changed to small one 
+
+    turnAllOff();
+    
+    printf("PCA9685 Init Successfully!\n");
+}
+
+
 void task_PCA9685(void *ignore)
 {
     printf("Executing on core %d\n", xPortGetCoreID());

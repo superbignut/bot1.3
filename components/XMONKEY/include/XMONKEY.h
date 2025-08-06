@@ -14,6 +14,8 @@
 #include "OSCILLATOR.h"
 
 
+#define LEG_NUM 8
+
 class MONKEY{
 public:
     void init();
@@ -39,19 +41,20 @@ public:
     void moveServos(int time, float target[8]);
 
 private:
-    Oscillator oscillator[8];
+    Oscillator oscillator[LEG_NUM];
     // Servo servo[8];
-    int board_pins[8];
-    int trim[8];
-    bool reverse[8];
+    // int board_pins[LEG_NUM];
+    int trim[LEG_NUM];
+    bool reverse[LEG_NUM];
     unsigned long _init_time;
     unsigned long _final_time;
     unsigned long _partial_time;
-    float _increment[8];
-    float _servo_position[8];
+    float _increment[LEG_NUM];
+    float _servo_position[LEG_NUM];
 
     int angToUsec(float value);
-    void execute(float steps, int period[8], int amplitude[8], int offset[8], int phase[8]);
+    
+    void execute(float steps, int period[LEG_NUM], int amplitude[LEG_NUM], int offset[LEG_NUM], int phase[LEG_NUM]);
 };
 
 #endif

@@ -39,6 +39,7 @@ class Oscillator{
         float getPhaseProgress();
         unsigned long getTime();
 
+    ///_output = A * sin(dt / period + _phi )  + offset
     private:
         int _period;
         int _amplitude;

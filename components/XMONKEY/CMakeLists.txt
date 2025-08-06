@@ -3,6 +3,6 @@ idf_component_register(
 
     INCLUDE_DIRS "include"
 
-    REQUIRES driver OSCILLATOR
+    REQUIRES driver OSCILLATOR PCA9685
     
     PRIV_REQUIRES)

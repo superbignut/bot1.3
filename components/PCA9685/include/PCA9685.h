@@ -84,6 +84,10 @@ extern esp_err_t generic_read_i2c_register_word(uint8_t regaddr, uint16_t* value
 extern esp_err_t generic_read_two_i2c_register(uint8_t regaddr, uint8_t* valueA, uint8_t* valueB);
 extern void disp_buf(uint16_t* buf, uint8_t len);
 
+int PCA_9685_Angle_to_Num(int angle);
+
+void MY_PCA9685_Init();
+
 #endif /* PCA9685_DRIVER_H */
 
 #ifdef __cplusplus
