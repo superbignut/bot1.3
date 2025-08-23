@@ -43,9 +43,6 @@ extern "C" void app_main(void)
     
     esp_timer_init(); // 全局初始化，以便后续调用获取 时间函数
 
-
-    monkey.init();
-
     // LD14_lnlt();
 
     // wlfl_init_sta();
@@ -63,8 +60,7 @@ extern "C" void app_main(void)
 
     while(1)
     {
-
-        // monkey.walk(1.0, 100);
+        monkey.walk(1000.0, 100);
         
         vTaskDelay(2000 / portTICK_PERIOD_MS);
         // printf("%lld\n ", esp_timer_get_time());

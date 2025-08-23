@@ -9,114 +9,69 @@
  *
  */
 #include "XMONKEY.h"
-#include "PCA9685.h"
 #include "stdio.h"
+#include "esp_timer.h"
+#include "PCA9685.h"
 
+void INNER_MOTOR::set_motor_angle(float angle)
+{
+    MY_PCA9685_SET_ANGLE(_leg_index, angle - _offset);
+}
+INNER_MOTOR::INNER_MOTOR()
+{
 
-void MONKEY::init()
+}
+
+INNER_MOTOR::INNER_MOTOR(int leg_index, int offset)
+{
+    _leg_index = leg_index;
+    _offset = offset;
+}
+
+void OUTER_MOTOR::set_motor_angle(float angle)
+{
+    MY_PCA9685_SET_ANGLE(_leg_index, angle - _offset);
+}
+
+OUTER_MOTOR::OUTER_MOTOR()
+{
+    
+}
+
+OUTER_MOTOR::OUTER_MOTOR(int leg_index, int offset)
+{
+    _leg_index = leg_index;
+    _offset = offset;
+}
+
+LEG::LEG()
+{
+    
+}
+LEG::LEG(int in_index,int in_offset,int ot_index,int ot_offset)
+{   
+
+    in_motor.set_leg_index(in_index);
+    in_motor.set_leg_offset(in_offset);
+}
+
+MONKEY::MONKEY()
 {   
     MY_PCA9685_Init();
 
+    /*
+        LEG init, 注册相对位置
+
+
+    */
+
     printf("init...\n");    
     
-    // Trim values for zero position calibration.
-    trim[0] = 0;
-    trim[1] = 0;
-    trim[2] = 0;
-    trim[3] = 0;
-    trim[4] = 0;
-    trim[5] = 0;
-    trim[6] = 0;
-    trim[7] = 0;
-
-    // For the reason of mirror-position of servo. Whether reverse canbe used to control Servo.
-    for (int i=0; i<LEG_NUM; ++i)
-    {
-        reverse[i] = false;
-    }
-        
-    for(int i=0; i<LEG_NUM; ++i)
-    {
-        oscillator[i].start();
-    }
-
-    zero();
 }
-void MONKEY::run(float steps, int period)
-{
-}
-void MONKEY::walk(float steps, int period)
+
+void MONKEY::walk(float steps, int T = 500)
 {
     printf("walk...\n");
-}
-void MONKEY::omniWalk(float steps, int T, bool side, float turn_factor)
-{
-}
-
-void MONKEY::turnL(float steps, int period)
-{
-}
-void MONKEY::turnR(float steps, int period)
-{
-}
-void MONKEY::moonwalkL(float steps, int period)
-{
-}
-void MONKEY::dance(float steps, int period)
-{
-}
-void MONKEY::upDown(float steps, int period)
-{
-}
-void MONKEY::pushUp(float steps, int period)
-{
-}
-void MONKEY::hello()
-{
-}
-void MONKEY::jump()
-{
-}
-void MONKEY::home()
-{
-}
 
 
-
-static void set_servo_angle(int pin, float angle)
-{    
-    setPWM(pin, 0, PCA_9685_Angle_to_Num(angle));
-}
-
-/// @brief Set all leg to *Zero* position.
-void MONKEY::zero()
-{
-    for(int i=0; i < LEG_NUM; ++i){
-        set_servo_angle(i, 90);
-    }
-}
-void MONKEY::frontBack(float steps, int period)
-{
-}
-
-void MONKEY::setServo(int id, float target)
-{
-}
-void MONKEY::reverseServo(int id)
-{
-}
-float getServo(int id)
-{
-    return 1.0;
-}
-void MONKEY::moveServos(int time, float target[8])
-{
-}
-
-int angToUsec(float value)
-{
-    return 0;
-}
-void MONKEY::execute(float steps, int period[8], int amplitude[8], int offset[8], int phase[8])
-{
 }

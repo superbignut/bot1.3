@@ -72,6 +72,16 @@ int PCA_9685_Angle_to_Num(int angle)
     return (int)ret;
 }
 
+/// @brief Set angle (0-180) to pcap685 pin's pin.
+/// @param pin PCA9685's pin num
+/// @param angle 0 - 180
+void MY_PCA9685_SET_ANGLE(uint8_t pin, float angle)
+{
+    assert(angle >= 0 && angle <= 180);
+
+    setPWM(pin, 0, PCA_9685_Angle_to_Num(angle));   // on
+}
+
 static char tag[] = "PCA9685";
 
 #undef ESP_ERROR_CHECK

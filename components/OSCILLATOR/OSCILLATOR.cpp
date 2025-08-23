@@ -1,14 +1,4 @@
-/**
- * @file OSCILLATOR.c
- * @author bignut
- * @brief
- * @version 0.1
- * @date 2025-07-27
- *
- * @copyright Copyright (c) 2025
- *
- */
-
+/* 
 #include <stdio.h>
 #include "OSCILLATOR.h"
 #include "esp_timer.h"
@@ -136,4 +126,4 @@ float Oscillator::getPhaseProgress()
 unsigned long Oscillator::getTime()
 {
     return _ref_time;
-}
+} */

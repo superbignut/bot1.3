@@ -38,7 +38,15 @@
         "errno.h": "c",
         "wlfl.h": "c",
         "random": "c",
-        "esp_err.h": "c"
+        "esp_err.h": "c",
+        "unordered_map": "cpp",
+        "fstream": "cpp",
+        "istream": "cpp",
+        "numeric": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "cstdio": "cpp",
+        "format": "cpp"
     },
     "cmake.environment": {
         "IDF_PATH": "/home/superbigcar/esp/esp-idf"
