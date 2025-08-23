@@ -46,7 +46,8 @@
         "ostream": "cpp",
         "sstream": "cpp",
         "cstdio": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "future": "cpp"
     },
     "cmake.environment": {
         "IDF_PATH": "/home/superbigcar/esp/esp-idf"

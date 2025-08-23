@@ -28,6 +28,8 @@
     |
    \|/  x
 
+
+   leg0                             leg3
                          y__
     x __                 |\     __ x
      |\                    \     /|
@@ -46,7 +48,7 @@
   |/__    \                          x
   x       _\| y
 
-
+    leg1                                leg2
 
 
 inner motor:  4-5-6-7 is rotate around z axis.
@@ -57,6 +59,12 @@ outer motor:  0-1-2-3 is rotate around x's relative axis
 
 #define LEG_NUM 4
 #define MOTOR_NUM (LEG_NUM * 2)
+
+#define LEG_0 0
+#define LEG_1 1
+#define LEG_2 2
+#define LEG_3 3
+
 
 class INNER_MOTOR
 {
@@ -106,12 +114,13 @@ public:
 
     void set_locale_position(float locale_x, float locale_y, float locale_z);    // 设置位置，当前参考系
 
+    void set_leg(int in_index,int in_offset,int ot_index,int ot_offset);
+
 private:
     float* from_position_to_angle(float locale_x, float locale_y, float locale_z);// 将locale地址 转为角度坐标, 解算
 
     void set_angle_position(float in_angle, float ot_angle);  // 设置角度， 下发 motor
 
-    // void 
 private:
     
     float current_motor_pos[MOTOR_NUM / LEG_NUM]; // 当下电机的位置
@@ -125,7 +134,7 @@ class MONKEY
 public:
     MONKEY(); // 初始化
 
-    void reset();   // 立正了  <--------------Todo
+    void reset();   // 初始化  <--------------Todo
 
     void walk(float steps, int period); // 进入步态大小循环， 计算robot 坐标下 每个腿末态位置， 不进行接算
 
@@ -135,12 +144,14 @@ public:
 
 private:
 
-    LEG leg[LEG_NUM];
+    void set_leg_rela(int leg_index, float rela_x, float rela_y);
 
-    float leg_rela_x[LEG_NUM];  // 每个腿 相对 robot 中心的位置坐标
-    float leg_rela_y[LEG_NUM];
+    LEG _leg[LEG_NUM];
+
+    float _leg_rela_x[LEG_NUM];  // 每个腿 相对 robot 中心的位置坐标
+    float _leg_rela_y[LEG_NUM];
     
-    float global_position[3];   // robot's xyz
+    float _global_position[3];   // robot's xyz 
 
     // float global_leg_position[LEG_NUM][3];  // 记录 腿 终点（与地面接触点） 的坐标
 };
