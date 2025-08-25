@@ -80,6 +80,8 @@ void MY_PCA9685_SET_ANGLE(uint8_t pin, float angle)
     assert(angle >= 0 && angle <= 180);
 
     setPWM(pin, 0, PCA_9685_Angle_to_Num(angle));   // on
+
+    // 如果有问题， 这里可以加一点 delay
 }
 
 static char tag[] = "PCA9685";

@@ -67,12 +67,34 @@ LEG::LEG(int in_index,int in_offset,int ot_index,int ot_offset)
 
 /// @brief 根据落脚点的位置， 计算 内外舵机的角度，
 ///        并将解算的角度， 直接替换参数 locale_x <-> inner_angle   locale_y <-> oouter_angle
+///        由于这里先做的内容是， robot 的leg 开始和结束的点 都是 和地面接触的(不接触的写 另一个 trans函数， simple first)， 
+///        所以 这里的两个自由度， 退化到 只剩一个自由度了，because z_0 = z_1 = 0
 /// @param locale_x 
 /// @param locale_y 
 /// @param locale_z 
 void LEG::trans_from_position_to_angle(int leg_index, float *locale_x, float *locale_y, float locale_z)// <---- todo  解算
-{
+{   
+    // 这个trans 每条腿的结算不一样， 但如果有通用的 可以提出来
+    switch (leg_index)
+    {
+    case LEG_0:
+        /* code */
 
+        break;
+
+    case LEG_1:
+        /* code */
+
+
+        break;
+    
+    case LEG_2:
+        /* code */
+        break;
+    case LEG_3:
+        /* code */
+        break;
+    }
 }
 
 /// @brief 将 robot 下发的 位置坐标转为 角度坐标， 进而下发给舵机
@@ -87,7 +109,7 @@ void LEG::leg_exec(int leg_index, float locale_x, float locale_y, float locale_z
     _ot_motor_angle = locale_y;
     
     MY_PCA9685_SET_ANGLE(_in_motor_index, _in_motor_angle - _in_motor_offset);
-    MY_PCA9685_SET_ANGLE(_ot_motor_index, _ot_motor_angle - _ot_motor_offset); // 这里 分两次下发, 太难受了 <---- todo 改成一次下发
+    MY_PCA9685_SET_ANGLE(_ot_motor_index, _ot_motor_angle - _ot_motor_offset); // 这里 分两次下发, 太难受了 <---- todo 改成一次下发 <--- 两次下发 好像也还ok
 }
 
 void LEG::set_leg(int in_index, int in_offset, int ot_index, int ot_offset)
