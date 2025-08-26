@@ -155,7 +155,7 @@ void task_PCA9685(void *ignore)
 
     printf("Finished setup, entering loop now\n");
     
-    while(1)
+/*     while(1)
     {
         // fade up and down each pin with static logarithmic table
         // see Weber Fechner Law
@@ -170,39 +170,7 @@ void task_PCA9685(void *ignore)
                 vTaskDelay(200/ portTICK_PERIOD_MS);
             }
 
-    }
+    } */
 
     vTaskDelete(NULL);
-}
-
-
-void task_PCA9685_New(void *ignore)
-{
-    printf("Executing on core %d\n", xPortGetCoreID());
-
-    esp_err_t ret;
-
-    i2c_example_master_init();
-
-    set_pca9685_adress(I2C_ADDRESS);
-
-    resetPCA9685();
-
-    setFrequencyPCA9685(PCA_9685_FREQ); // Changed to small one 
-
-    turnAllOff();
-
-    printf("Finished setup, entering loop now\n");
-    
-
-    vTaskDelete(NULL);
-}
-
-
-void create_PCA9685_New_Task()
-{
-    // 这里如果不放在 vtask 中就会报错
-    xTaskCreate(task_PCA9685_New, "task_PCA9685", 1024 * 2, (void* ) 0, 10, NULL);
-    
-    vTaskDelay(2000/ portTICK_PERIOD_MS);
 }

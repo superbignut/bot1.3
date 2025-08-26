@@ -74,6 +74,12 @@ outer motor:  0-1-2-3 is rotate around x's relative axis
 #define HALF_ROBOT_WIDTH (67.5 / 2)
 #define HALF_ROBOT_HIGH (30 / 2)
 
+#define LEG_L1 (25.75)
+#define LEG_L2 (40.0)
+#define LEG_L3 (20.0)
+
+#define LEG_IN_BETA_0 (30.0)
+
 
 /*class INNER_MOTOR {
 

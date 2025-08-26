@@ -12,6 +12,7 @@
 #include "stdio.h"
 #include "esp_timer.h"
 #include "PCA9685.h"
+#include "cmath"
 
 /* void INNER_MOTOR::set_motor_angle(float angle)
 {
@@ -69,12 +70,17 @@ LEG::LEG(int in_index,int in_offset,int ot_index,int ot_offset)
 ///        并将解算的角度， 直接替换参数 locale_x <-> inner_angle   locale_y <-> oouter_angle
 ///        由于这里先做的内容是， robot 的leg 开始和结束的点 都是 和地面接触的(不接触的写 另一个 trans函数， simple first)， 
 ///        所以 这里的两个自由度， 退化到 只剩一个自由度了，because z_0 = z_1 = 0
-/// @param locale_x 
+/// @param locale_x theta'
 /// @param locale_y 
 /// @param locale_z 
 void LEG::trans_from_position_to_angle(int leg_index, float *locale_x, float *locale_y, float locale_z)// <---- todo  解算
 {   
     // 这个trans 每条腿的结算不一样， 但如果有通用的 可以提出来
+
+    assert(locale_z == 0);
+
+    float theta;
+    
     switch (leg_index)
     {
     case LEG_0:
@@ -83,9 +89,20 @@ void LEG::trans_from_position_to_angle(int leg_index, float *locale_x, float *lo
         break;
 
     case LEG_1:
-        /* code */
+        /*
 
+        x' = (l_1 + l_2 * sin\beta')sin\theta' 
+        y' = -(l_1 + l_2 * sin\beta')cos\theta' 
 
+        \beta' = \beta_0 = 30度
+        \theta' = new angle 这里就是要解算的仅剩的自由度了
+         
+        */
+        
+        theta = asin(*locale_x / (LEG_L1 + LEG_L2 * sin(LEG_IN_BETA_0)));
+
+        *locale_x = theta;
+        
         break;
     
     case LEG_2:
@@ -108,8 +125,8 @@ void LEG::leg_exec(int leg_index, float locale_x, float locale_y, float locale_z
     _in_motor_angle = locale_x;
     _ot_motor_angle = locale_y;
     
-    MY_PCA9685_SET_ANGLE(_in_motor_index, _in_motor_angle - _in_motor_offset);
-    MY_PCA9685_SET_ANGLE(_ot_motor_index, _ot_motor_angle - _ot_motor_offset); // 这里 分两次下发, 太难受了 <---- todo 改成一次下发 <--- 两次下发 好像也还ok
+    //MY_PCA9685_SET_ANGLE(_in_motor_index, _in_motor_angle - _in_motor_offset);
+    //MY_PCA9685_SET_ANGLE(_ot_motor_index, _ot_motor_angle - _ot_motor_offset); // 这里 分两次下发, 太难受了 <---- todo 改成一次下发 <--- 两次下发 好像也还ok
 }
 
 void LEG::set_leg(int in_index, int in_offset, int ot_index, int ot_offset)
@@ -125,8 +142,10 @@ void LEG::set_leg(int in_index, int in_offset, int ot_index, int ot_offset)
 /// @brief robot 初始化 机器人固定参数
 MONKEY::MONKEY()
 {   
-    MY_PCA9685_Init();
+    // MY_PCA9685_Init();
 
+    create_PCA9685_New_Task();
+    
     /*
         LEG init, 注册编号， offset
     */
@@ -162,12 +181,12 @@ void MONKEY::set_leg_rela(int leg_index, float rela_x, float rela_y)
 /// @brief 
 /*  
 
-                leg1                    robot (HALF_ROBOT_WIDTH,  0,  0)
+                leg1         l1         robot (HALF_ROBOT_WIDTH,  0,  0)
                   ____________________________.
                  /|
                 / |
-               /  |
-        40    /   |   33
+           l2  /  |
+        40    /   |   34.6
              /    |         arctan(20 / 33) = 30度
             /     |
            /      |
@@ -175,26 +194,22 @@ void MONKEY::set_leg_rela(int leg_index, float rela_x, float rela_y)
          ---------|
         |    20
    20   |
-        |
+        | l3
         |
         *  Foot
 */
-void MONKEY::reset()
-{
-    //set_leg_global_position(0, )
-}
 
 
 /// @brief monkey 所有 leg 初始化
 void MONKEY::reset()
 {
-    set_leg_position(LEG_0, -HALF_ROBOT_WIDTH, -HALF_ROBOT_LENGTH, -53); // -53 = 20 + 40 * cos\theta
+    set_leg_position(LEG_0, -HALF_ROBOT_WIDTH, -HALF_ROBOT_LENGTH, 0); // -53 = 20 + 40 * cos\theta
 
-    set_leg_position(LEG_1,  HALF_ROBOT_WIDTH, -HALF_ROBOT_LENGTH, -53); // -53 = 20 + 40 * cos\theta
+    set_leg_position(LEG_1,  HALF_ROBOT_WIDTH, -HALF_ROBOT_LENGTH, 0); // -53 = 20 + 40 * cos\theta
 
-    set_leg_position(LEG_2,  HALF_ROBOT_WIDTH,  HALF_ROBOT_LENGTH, -53); // -53 = 20 + 40 * cos\theta
+    set_leg_position(LEG_2,  HALF_ROBOT_WIDTH,  HALF_ROBOT_LENGTH, 0); // -53 = 20 + 40 * cos\theta
 
-    set_leg_position(LEG_3, -HALF_ROBOT_WIDTH,  HALF_ROBOT_LENGTH, -53); // -53 = 20 + 40 * cos\theta
+    set_leg_position(LEG_3, -HALF_ROBOT_WIDTH,  HALF_ROBOT_LENGTH, 0); // -53 = 20 + 40 * cos\theta
 
     robot_exec();
 }
@@ -276,6 +291,6 @@ void MONKEY::robot_exec()
     // 四条腿执行陆续指令
     for(int i=0; i<LEG_NUM; ++i)
     {
-        _leg[i].leg_exec(i, _leg_locale_position[i][0], _leg_locale_position[i][1], _leg_locale_position[i][2]);
+        _leg[i].leg_exec(i, _leg_locale_position[i][0], _leg_locale_position[i][1], 0);
     }
 }

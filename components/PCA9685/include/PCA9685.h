@@ -90,6 +90,8 @@ void MY_PCA9685_Init();
 
 void MY_PCA9685_SET_ANGLE(uint8_t pin, float angle);
 
+void create_PCA9685_New_Task();
+
 #endif /* PCA9685_DRIVER_H */
 
 #ifdef __cplusplus

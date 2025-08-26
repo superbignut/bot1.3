@@ -22,6 +22,7 @@
 #include "esp_timer.h"
 // #include "OSCILLATOR.h"
 #include "XMONKEY.h"
+#include <cmath>
 
 static const char *TAG = "Example";
 
@@ -60,9 +61,11 @@ extern "C" void app_main(void)
 
     while(1)
     {
-        monkey.walk(1000.0, 100);
+        // monkey.walk(1000.0, 100);
+
+
         
         vTaskDelay(2000 / portTICK_PERIOD_MS);
-        // printf("%lld\n ", esp_timer_get_time());
+        printf("%.2f\n ", asin(0.5));
     }
 }
