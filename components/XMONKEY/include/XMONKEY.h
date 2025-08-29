@@ -78,8 +78,9 @@ outer motor:  0-1-2-3 is rotate around x's relative axis
 #define LEG_L2 (40.0)
 #define LEG_L3 (20.0)
 
-#define LEG_IN_BETA_0 (30.0)
-
+#define LEG_IN_BETA_0 (30.0 / 180.0 * M_PI)
+#define ANGLE_2_RAD(x) ((x) * (3.1415 / 180.0))
+#define RAD_2_ANGLE(x) ((x) * (180.0 / 3.1415))
 
 /*class INNER_MOTOR {
 
@@ -136,9 +137,11 @@ public:
 
 
 private:
-    void trans_from_position_to_angle(int leg_index, float *locale_x, float *locale_y, float locale_z);// 将locale地址 转为角度坐标, 解算
+    void trans_from_position_to_angle_z0(int leg_index, float *locale_x, float *locale_y, float locale_z);// 将locale地址 转为角度坐标, 解算
 
     void set_angle_position(float in_angle, float ot_angle);  // 设置角度， 下发 motor
+
+    float convert_angle_to_9685_angle(int leg_index, float angle);
 
 private:
     
@@ -146,7 +149,7 @@ private:
 
     int _in_motor_index = 5;
     int _in_motor_offset = 0;
-    float _in_motor_angle;
+    float _in_motor_angle;  // Radian
 
     int _ot_motor_index = 5;
     int _ot_motor_offset = 0;

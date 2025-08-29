@@ -63,9 +63,9 @@ extern "C" void app_main(void)
     {
         // monkey.walk(1000.0, 100);
 
-
+        
         
         vTaskDelay(2000 / portTICK_PERIOD_MS);
-        printf("%.2f\n ", asin(0.5));
+        // printf("%.2f, %.2f\n ", asin(0.5), sin(3.1415 / 6));
     }
 }

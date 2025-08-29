@@ -203,6 +203,6 @@ void create_PCA9685_New_Task()
 {
     // 这里如果不放在 vtask 中就会报错
     xTaskCreate(task_PCA9685_New, "task_PCA9685", 1024 * 2, (void* ) 0, 10, NULL);
-    
+    // 这里 deay 一会
     vTaskDelay(2000/ portTICK_PERIOD_MS);
 }
