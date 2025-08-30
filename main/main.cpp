@@ -28,7 +28,7 @@ static const char *TAG = "Example";
 
 // extern void task_PCA9685(void *ignore);
 
-MONKEY monkey;
+
 
 extern "C" void app_main(void)
 {   
@@ -41,8 +41,12 @@ extern "C" void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
+
+    create_PCA9685_New_Task();
+
+    MONKEY monkey;
     
-    esp_timer_init(); // 全局初始化，以便后续调用获取 时间函数
+    // esp_timer_init(); // 全局初始化，以便后续调用获取 时间函数
 
     // LD14_lnlt();
 
@@ -54,18 +58,18 @@ extern "C" void app_main(void)
     
     // xTaskCreate(task_PCA9685, "task_PCA9685", 1024 * 2, (void* ) 0, 10, NULL);
 
-
     // task_PCA9685(NULL);
     
+
 
 
     while(1)
     {
         // monkey.walk(1000.0, 100);
 
+        monkey.test();
         
-        
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(200 / portTICK_PERIOD_MS);
         // printf("%.2f, %.2f\n ", asin(0.5), sin(3.1415 / 6));
     }
 }

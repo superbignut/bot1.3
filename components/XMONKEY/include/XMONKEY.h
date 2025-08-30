@@ -82,6 +82,17 @@ outer motor:  0-1-2-3 is rotate around x's relative axis
 #define ANGLE_2_RAD(x) ((x) * (3.1415 / 180.0))
 #define RAD_2_ANGLE(x) ((x) * (180.0 / 3.1415))
 
+
+
+#define MOTOR_0 0
+#define MOTOR_1 1
+#define MOTOR_2 2
+#define MOTOR_3 3
+#define MOTOR_4 4
+#define MOTOR_5 5
+#define MOTOR_6 6
+#define MOTOR_7 7
+
 /*class INNER_MOTOR {
 
 public:
@@ -141,7 +152,7 @@ private:
 
     void set_angle_position(float in_angle, float ot_angle);  // 设置角度， 下发 motor
 
-    float convert_angle_to_9685_angle(int leg_index, float angle);
+    float convert_angle_to_9685_angle(int motor_index, float angle);
 
 private:
     
@@ -164,6 +175,8 @@ public:
     void reset();   // 初始化  <--------------Todo
 
     void walk(float steps, int period); // 进入步态大小循环， 计算robot 坐标下 每个腿末态位置， 不进行接算
+
+    void test();
 
 private:
 

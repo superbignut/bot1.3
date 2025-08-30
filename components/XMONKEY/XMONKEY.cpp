@@ -66,6 +66,7 @@ LEG::LEG(int in_index,int in_offset,int ot_index,int ot_offset)
 
 }
 
+
 /// @brief 根据落脚点的位置， 计算 内外舵机的角度，
 ///        并将解算的角度， 直接替换参数 locale_x <-> inner_angle   locale_y <-> oouter_angle
 ///        由于这里先做的内容是， robot 的leg 开始和结束的点 都是 和地面接触的(不接触的写 另一个 trans函数， simple first)，
@@ -157,20 +158,21 @@ void LEG::trans_from_position_to_angle_z0(int leg_index, float *locale_x, float 
     *locale_y = LEG_IN_BETA_0; // 这里直接赋给 初始值
 }
 
-/// @brief 将解算的angle 转为 pca9685 的 angle 之间需要一个转换, 与实际的舵机安装角度有关
+/// @brief 将解算的期望 angle 转为 pca9685 的 angle 之间需要一个转换, 与实际的舵机安装位置、朝向有关
 /// @param leg_index 
 /// @param angle  角度 angle : 0-180
-/// @return 
-float LEG::convert_angle_to_9685_angle(int leg_index, float angle) // <- int motor_index <-----Todo
+/// @return 舵机能处理的角度
+float LEG::convert_angle_to_9685_angle(int motor_index, float angle) // <- int motor_index <-----Todo
 {
-    if(leg_index == LEG_0 || leg_index == LEG_1)      // <----- 这里不是和 leg 的关系, 而是和 motor 的关系
+    if(motor_index == MOTOR_4 || motor_index == MOTOR_5)      // <----- 这里不是和 leg 的关系, 而是和 motor 的关系
     {
         return 90.0 - angle;
     }
-    else
+    else if (motor_index == MOTOR_6 || motor_index == MOTOR_7)
     {
         return angle + 90.0;
     }
+    return 0;
 }
 /// @brief 将 robot 下发的 位置坐标转为 角度坐标， 进而下发给舵机
 /// @param leg_index 
@@ -190,13 +192,16 @@ void LEG::leg_exec(int leg_index, float locale_x, float locale_y, float locale_z
         /* printf("LEG ANGLE IS: %d, x: %.2f, y: %.2f, z: %.2f\n", leg_index, locale_x, locale_y, locale_z);
         return; */
 
-        _in_motor_angle = convert_angle_to_9685_angle(leg_index, RAD_2_ANGLE(locale_x));
-        _ot_motor_angle = convert_angle_to_9685_angle(leg_index, RAD_2_ANGLE(locale_y));
+        _in_motor_angle = convert_angle_to_9685_angle(_in_motor_index, RAD_2_ANGLE(locale_x));
+        _ot_motor_angle = convert_angle_to_9685_angle(_ot_motor_index, RAD_2_ANGLE(locale_y));
 
-        printf("LEG INDEX IS : %d, inner angle: %.2f, outer angle: %.2f \n", leg_index, _in_motor_angle, _ot_motor_angle);
+
+        MY_PCA9685_SET_ANGLE(_in_motor_index, _in_motor_angle);
+
+        printf("In_Motor INDEX IS : %d, inner angle: %.2f, outer angle: %.2f \n", _in_motor_index, _in_motor_angle, _ot_motor_angle);
         return;
         // printf("this is --> %.2f", locale_x);
-        MY_PCA9685_SET_ANGLE(_in_motor_index, 0);
+        
         MY_PCA9685_SET_ANGLE(_ot_motor_index, 0); // 这里 分两次下发, 太难受了 <---- todo 改成一次下发 <--- 两次下发 好像也还ok
     }
     
@@ -216,9 +221,6 @@ void LEG::set_leg(int in_index, int in_offset, int ot_index, int ot_offset)
 MONKEY::MONKEY()
 {   
     // MY_PCA9685_Init();
-
-    create_PCA9685_New_Task();
-    
     /*
         LEG init, 注册编号， offset
     */
@@ -305,6 +307,48 @@ void MONKEY::reset()
     set_leg_position(LEG_3, -HALF_ROBOT_WIDTH,  HALF_ROBOT_LENGTH + tmp_l, 0); // -53 = 20 + 40 * cos\theta
 
     robot_exec();
+}
+
+
+void MONKEY::test()
+{
+    
+    int l = 10;
+
+    do
+    {
+        l = 20;
+
+        set_leg_position(LEG_0, -HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        set_leg_position(LEG_1,  HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        set_leg_position(LEG_2,  HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        set_leg_position(LEG_3, -HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        robot_exec();
+
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+
+        l = 0;
+
+        set_leg_position(LEG_0, -HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        set_leg_position(LEG_1,  HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        set_leg_position(LEG_2,  HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        set_leg_position(LEG_3, -HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        robot_exec();
+
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+
+
+    }while(false);
+
+
 }
 
 void MONKEY::walk(float steps, int T = 500)
