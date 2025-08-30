@@ -59,9 +59,6 @@ extern "C" void app_main(void)
     // xTaskCreate(task_PCA9685, "task_PCA9685", 1024 * 2, (void* ) 0, 10, NULL);
 
     // task_PCA9685(NULL);
-    
-
-
 
     while(1)
     {

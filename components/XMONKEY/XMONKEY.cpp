@@ -69,6 +69,127 @@ LEG::LEG(int in_index,int in_offset,int ot_index,int ot_offset)
 
 /// @brief 根据落脚点的位置， 计算 内外舵机的角度，
 ///        并将解算的角度， 直接替换参数 locale_x <-> inner_angle   locale_y <-> oouter_angle
+///        这里对更一般的 z 存在高度的情况进行解算
+///        x 解算一个自由度 -> inner_angle  z解算另一个自由度 -> ot_angle   
+///        
+/// @param locale_x theta'
+/// @param locale_y 
+/// @param locale_z 
+void LEG::trans_from_position_to_angle(int leg_index, float *locale_x, float *locale_y, float locale_z)// <---- todo  解算
+{   
+
+    /*  leg0                                                           leg3
+        +-----------+-----------4---------------7-----------+-----------+
+                           θ (/ |      Back     |\ θ
+                             /  |               | \
+                            /   |               |  \
+                                |               |
+         leg_l2*sin     leg_l1  |     Front     |        
+        +-----------+-----------5---------------6------------+----------+
+        leg1                θ (/                 \  θ                  leg2
+                              /                   \
+                             /                     \
+                            /               
+
+            -------------------> y
+            |
+            |
+            |
+            |
+            |
+            |
+           \|/
+            x
+        这里解算的 都是这里的 θ
+
+        
+        x' = (l_1 + l_2 * sin\beta')sin\theta' 
+        y' = -(l_1 + l_2 * sin\beta')cos\theta'  ---> leg1
+
+        这里 由于只有一个自由度, 所以用 x y 中的一个就可以了
+
+        l_2 * cos( beta_0 ) + l3 = l_2 * cos( beta' ) + l3 + h   <---- 这里可以解算出 抬腿的高度,
+
+
+
+        但如果 h = 0 : 则 \beta' = \beta_0 = 30度
+
+        \theta' = new angle 这里就是要解算的仅剩的自由度了
+        
+    */
+
+
+    // 这个trans 每条腿的结算不一样， 但如果有通用的 可以提出来
+
+    /*  
+
+                leg1         l1         robot (HALF_ROBOT_WIDTH,  0,  0)
+                  .___________________________.
+                 /|     leg-body link point
+                / | β
+           l2  /  |
+        40    /   |   34.6
+             /    |         arctan(20 / 33) = 30度
+            /     |
+           /      |
+          /       |
+         ---------|
+        |    20
+   20   |
+        | l3
+        |
+        *  Foot
+
+        其余 leg 的 β 同理， 向内收为减小， 向外张为 增大
+*/
+
+    assert(locale_z >= 0);
+
+    float theta;
+    float beta;
+    
+    switch (leg_index)
+    {
+    case LEG_0:
+        /* code */
+        
+        theta = asin(*locale_x / (LEG_L1 + LEG_L2 * sin(LEG_IN_BETA_0)));
+
+        *locale_x = theta;
+        break;
+
+    case LEG_1:
+
+        theta = asin(*locale_x / (LEG_L1 + LEG_L2 * sin(LEG_IN_BETA_0)));
+
+        *locale_x = theta;
+        
+        break;
+    
+    case LEG_2:
+        /* code */
+        theta = asin(*locale_x / (LEG_L1 + LEG_L2 * sin(LEG_IN_BETA_0)));
+        
+        *locale_x = theta;
+        break;
+    case LEG_3:
+        /* code */
+        theta = asin(*locale_x / (LEG_L1 + LEG_L2 * sin(LEG_IN_BETA_0)));
+                        
+        *locale_x = theta;
+        break;
+    }
+
+    // 解算 beta 角
+    beta = acos(LEG_L2 * cos(LEG_IN_BETA_0) - locale_z);
+
+    *locale_y = beta;
+    
+}
+
+
+/// @brief 根据落脚点的位置， 计算 内外舵机的角度，
+///        并将解算的角度， 直接替换参数 locale_x <-> inner_angle   locale_y <-> oouter_angle
 ///        由于这里先做的内容是， robot 的leg 开始和结束的点 都是 和地面接触的(不接触的写 另一个 trans函数， simple first)，
 ///        也就是 z_0 = z_1 = 0
 ///        所以 这里的两个自由度， 退化到 只剩一个自由度了，because z_0 = z_1 = 0
@@ -122,6 +243,8 @@ void LEG::trans_from_position_to_angle_z0(int leg_index, float *locale_x, float 
     assert(locale_z == 0);
 
     float theta;
+
+    float beta;
     
     switch (leg_index)
     {
@@ -155,12 +278,17 @@ void LEG::trans_from_position_to_angle_z0(int leg_index, float *locale_x, float 
         break;
     }
 
-    *locale_y = LEG_IN_BETA_0; // 这里直接赋给 初始值
+    // *locale_y = LEG_IN_BETA_0; // 这里直接赋给 初始值
+
+
+    beta = acos((LEG_L2 * cos(LEG_IN_BETA_0) - locale_z) / LEG_L2);
+
+    *locale_y = beta;
 }
 
 /// @brief 将解算的期望 angle 转为 pca9685 的 angle 之间需要一个转换, 与实际的舵机安装位置、朝向有关
 /// @param leg_index 
-/// @param angle  角度 angle : 0-180
+/// @param angle  解算出的 角度 angle : 0-180
 /// @return 舵机能处理的角度
 float LEG::convert_angle_to_9685_angle(int motor_index, float angle) // <- int motor_index <-----Todo
 {
@@ -172,7 +300,15 @@ float LEG::convert_angle_to_9685_angle(int motor_index, float angle) // <- int m
     {
         return angle + 90.0;
     }
-    return 0;
+    else if (motor_index == MOTOR_0 || motor_index == MOTOR_1)
+    {
+        return 90.0 - angle;
+    }
+    else if (motor_index == MOTOR_2 || motor_index == MOTOR_3)
+    {
+        return 90.0 + angle;
+    }
+    return angle;
 }
 /// @brief 将 robot 下发的 位置坐标转为 角度坐标， 进而下发给舵机
 /// @param leg_index 
@@ -189,6 +325,12 @@ void LEG::leg_exec(int leg_index, float locale_x, float locale_y, float locale_z
         
         trans_from_position_to_angle_z0(leg_index, &locale_x, &locale_y, 0); // 得到结算后的角度
 
+    }
+    else 
+    {
+        trans_from_position_to_angle(leg_index, &locale_x, &locale_y, locale_z);
+    }
+
         /* printf("LEG ANGLE IS: %d, x: %.2f, y: %.2f, z: %.2f\n", leg_index, locale_x, locale_y, locale_z);
         return; */
 
@@ -199,11 +341,11 @@ void LEG::leg_exec(int leg_index, float locale_x, float locale_y, float locale_z
         MY_PCA9685_SET_ANGLE(_in_motor_index, _in_motor_angle);
 
         printf("In_Motor INDEX IS : %d, inner angle: %.2f, outer angle: %.2f \n", _in_motor_index, _in_motor_angle, _ot_motor_angle);
-        return;
+        // return;
         // printf("this is --> %.2f", locale_x);
         
-        MY_PCA9685_SET_ANGLE(_ot_motor_index, 0); // 这里 分两次下发, 太难受了 <---- todo 改成一次下发 <--- 两次下发 好像也还ok
-    }
+        MY_PCA9685_SET_ANGLE(_ot_motor_index, _ot_motor_angle); // 这里 分两次下发, 太难受了 <---- todo 改成一次下发 <--- 两次下发 好像也还ok
+    
     
 }
 
@@ -347,6 +489,34 @@ void MONKEY::test()
 
 
     }while(false);
+
+
+}
+
+
+void MONKEY::test_z()
+{
+    
+    int l = 10;
+
+    do
+    {
+        l = 20;
+
+        set_leg_position(LEG_0, -HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        set_leg_position(LEG_1,  HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        set_leg_position(LEG_2,  HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        set_leg_position(LEG_3, -HALF_ROBOT_WIDTH + l, 0, 0); // -53 = 20 + 40 * cos\theta
+
+        robot_exec();
+
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+
+
+    } while(false);
 
 
 }

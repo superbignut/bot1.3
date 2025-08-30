@@ -82,7 +82,7 @@ outer motor:  0-1-2-3 is rotate around x's relative axis
 #define ANGLE_2_RAD(x) ((x) * (3.1415 / 180.0))
 #define RAD_2_ANGLE(x) ((x) * (180.0 / 3.1415))
 
-
+#define INIT_MONKEY_H (LEG_L3 + LEG_L2 * cos(LEG_IN_BETA_0))
 
 #define MOTOR_0 0
 #define MOTOR_1 1
@@ -150,6 +150,8 @@ public:
 private:
     void trans_from_position_to_angle_z0(int leg_index, float *locale_x, float *locale_y, float locale_z);// 将locale地址 转为角度坐标, 解算
 
+    void trans_from_position_to_angle(int leg_index, float *locale_x, float *locale_y, float locale_z);// 将locale地址 转为角度坐标, 解算
+
     void set_angle_position(float in_angle, float ot_angle);  // 设置角度， 下发 motor
 
     float convert_angle_to_9685_angle(int motor_index, float angle);
@@ -177,6 +179,8 @@ public:
     void walk(float steps, int period); // 进入步态大小循环， 计算robot 坐标下 每个腿末态位置， 不进行接算
 
     void test();
+
+    void test_z();
 
 private:
 
