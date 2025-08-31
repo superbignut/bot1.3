@@ -78,7 +78,9 @@ outer motor:  0-1-2-3 is rotate around x's relative axis
 #define LEG_L2 (40.0)
 #define LEG_L3 (20.0)
 
-#define LEG_IN_BETA_0 (30.0 / 180.0 * M_PI)
+// 这个角度可以设置 monkey的 初始高度
+#define LEG_IN_BETA_0 (10.0 / 180.0 * M_PI)     
+
 #define ANGLE_2_RAD(x) ((x) * (3.1415 / 180.0))
 #define RAD_2_ANGLE(x) ((x) * (180.0 / 3.1415))
 
@@ -93,47 +95,12 @@ outer motor:  0-1-2-3 is rotate around x's relative axis
 #define MOTOR_6 6
 #define MOTOR_7 7
 
-/*class INNER_MOTOR {
-
-public:
-    INNER_MOTOR();
-    INNER_MOTOR(int leg_index, int offset);
-
-    void set_leg_index(int index);
-
-    void set_leg_offset(int offset);
-
-    void set_motor_angle(float angle);
-
-    void motor_exec();
-
-private:
-    int _leg_index = 5;
-    int _offset = 0;
-    float _angle;
-};
-
-class OUTER_MOTOR
+enum MONKEY_STATUS 
 {
-public:
-    OUTER_MOTOR();
-    OUTER_MOTOR(int leg_index, int offset);
-
-    void set_leg_index(int index);
-
-    void set_leg_offset(int offset);
-
-    void set_motor_angle(float angle);
-
-    void motor_exec();
-
-private:
-    int _leg_index = 5;
-    int _offset = 0;
-
-    float _angle;
+    X_RESET=0, X_WALK_F, X_WALK_B, X_ROTATE_L, X_ROTATE_R, X_TEST
 };
- */
+
+
 class LEG
 {
 public:
@@ -167,6 +134,8 @@ private:
     int _ot_motor_index = 5;
     int _ot_motor_offset = 0;
     float _ot_motor_angle;
+    
+    // _leg_index 完全可以作为一个成员变量， 从而取消成员函数中的 leg_index 参数传入 <------ Todo
 };
 
 class MONKEY
@@ -174,15 +143,17 @@ class MONKEY
 public:
     MONKEY(); // 初始化
 
-    void reset();   // 初始化  <--------------Todo
+    void main();
 
-    void walk(float steps, int period); // 进入步态大小循环， 计算robot 坐标下 每个腿末态位置， 不进行接算
+    void set_status(MONKEY_STATUS s);
+
+private:
 
     void test();
 
-    void test_z();
+    void reset();   // 初始化  <--------------Todo
 
-private:
+    void walk(float steps, int period); // 进入步态大小循环， 计算robot 坐标下 每个腿末态位置， 不进行接算
 
     void trans_from_robot_to_leg(int leg_index, float *leg_global_x, float *leg_global_y, float *leg_global_z); //  将robot 坐标转为 腿坐标
 
@@ -190,16 +161,19 @@ private:
 
     void robot_exec();    // 运动下发
 
-    void set_leg_rela(int leg_index, float rela_x, float rela_y);   // 设置 leg 相对 body 的坐标
+    void set_leg_link_point(int leg_index, float rela_x, float rela_y);   // 设置 leg 相对 body 的坐标
 
     LEG _leg[LEG_NUM];
 
-    float _leg_rela_x[LEG_NUM];  // 每个腿 相对 robot 中心的位置坐标
-    float _leg_rela_y[LEG_NUM];
+    float _leg_link_body_x[LEG_NUM];  // 每个腿 相对 robot 中心的位置坐标
+
+    float _leg_link_body_y[LEG_NUM];
     
     float _robot_global_position[3];   // robot's xyz 
 
     float _leg_locale_position[LEG_NUM][3];
+
+    MONKEY_STATUS _robot_status;    // 使用这个全局状态的切换来 控制不同的步态 
 
     // float global_leg_position[LEG_NUM][3];  // 记录 腿 终点（与地面接触点） 的坐标
 };
