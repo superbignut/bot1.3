@@ -285,7 +285,7 @@ void LEG::leg_exec(int leg_index, float locale_x, float locale_y, float locale_z
     // printf("LEG POS IS: %d, x: %.2f, y: %.2f, z: %.2f\n", leg_index, locale_x, locale_y, locale_z);
     // return
 
-        trans_from_position_to_angle(leg_index, &locale_x, &locale_y, locale_z);
+    trans_from_position_to_angle(leg_index, &locale_x, &locale_y, locale_z);
 
     /* printf("LEG ANGLE IS: %d, x: %.2f, y: %.2f, z: %.2f\n", leg_index, locale_x, locale_y, locale_z);
     return; */

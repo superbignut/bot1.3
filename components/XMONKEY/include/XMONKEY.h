@@ -125,14 +125,14 @@ private:
 
 private:
     
-    float current_motor_pos[MOTOR_NUM / LEG_NUM]; // 当下电机的位置
+    // float current_motor_pos[MOTOR_NUM / LEG_NUM]; // 当下电机的位置
 
     int _in_motor_index = 5;
-    int _in_motor_offset = 0;
+    float _in_motor_offset = 0;
     float _in_motor_angle;  // Radian
 
     int _ot_motor_index = 5;
-    int _ot_motor_offset = 0;
+    float _ot_motor_offset = 0;
     float _ot_motor_angle;
     
     // _leg_index 完全可以作为一个成员变量， 从而取消成员函数中的 leg_index 参数传入 <------ Todo
