@@ -38,11 +38,11 @@
     |/      4---------------7
    y```     |      Back     |
             |               |
-            |     0,0,0     |
+            |     0,0,0     |  width
             |               |
             |     Front     |        y
             5---------------6     ``/|
-          /                   \    /
+          /      length       \    /
        1                        2 /
       / \                         \
     /    \                       __\|
@@ -95,6 +95,8 @@ outer motor:  0-1-2-3 is rotate around x's relative axis
 #define MOTOR_6 6
 #define MOTOR_7 7
 
+#define STEPS_PER_PART 100
+
 enum MONKEY_STATUS 
 {
     X_RESET=0, X_WALK_F, X_WALK_B, X_ROTATE_L, X_ROTATE_R, X_TEST
@@ -106,18 +108,17 @@ class LEG
 public:
     LEG();
 
-    LEG(int in_index,int in_offset,int ot_index,int ot_offset); // 初始化电机编号， 与位置补偿
+    LEG(int leg_index, int in_index,int in_offset,int ot_index,int ot_offset); // 初始化电机编号， 与位置补偿
 
-    void leg_exec(int leg_index, float locale_x, float locale_y, float locale_z);    // 设置位置，当前参考系
+    void leg_exec(float locale_x, float locale_y, float locale_z);    // 设置位置，当前参考系
 
-    void set_leg(int in_index,int in_offset,int ot_index,int ot_offset);
+    void set_leg(int leg_index, int in_index,int in_offset,int ot_index,int ot_offset);
 
 
 
 private:
-    void trans_from_position_to_angle_z0(int leg_index, float *locale_x, float *locale_y, float locale_z);// 将locale地址 转为角度坐标, 解算
-
-    void trans_from_position_to_angle(int leg_index, float *locale_x, float *locale_y, float locale_z);// 将locale地址 转为角度坐标, 解算
+    
+    void trans_from_position_to_angle(float *locale_x, float *locale_y, float locale_z);// 将locale地址 转为角度坐标, 解算
 
     void set_angle_position(float in_angle, float ot_angle);  // 设置角度， 下发 motor
 
@@ -135,7 +136,7 @@ private:
     float _ot_motor_offset = 0;
     float _ot_motor_angle;
     
-    // _leg_index 完全可以作为一个成员变量， 从而取消成员函数中的 leg_index 参数传入 <------ Todo
+    int _leg_index;
 };
 
 class MONKEY
@@ -162,6 +163,8 @@ private:
     void robot_exec();    // 运动下发
 
     void set_leg_link_point(int leg_index, float rela_x, float rela_y);   // 设置 leg 相对 body 的坐标
+
+    void creep();
 
     LEG _leg[LEG_NUM];
 
