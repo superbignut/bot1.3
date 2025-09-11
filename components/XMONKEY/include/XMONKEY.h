@@ -144,7 +144,7 @@ class MONKEY
 public:
     MONKEY(); // 初始化
 
-    void main();
+    void main_loop();
 
     void set_status(MONKEY_STATUS s);
 

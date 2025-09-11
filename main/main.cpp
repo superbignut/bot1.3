@@ -60,15 +60,20 @@ extern "C" void app_main(void)
 
     // task_PCA9685(NULL);
 
+    // float t = 1;
+
     while(1)
     {
         // monkey.walk(1000.0, 100);
 
         printf("Compile Successfully!\n");
 
-        monkey.set_status(X_TEST);
+        monkey.set_status(X_WALK_F);
 
-        monkey.main();
+        monkey.main_loop();
+
+        // printf("%.2f\n", sin(++t));
+
         
         vTaskDelay(200 / portTICK_PERIOD_MS);
         // printf("%.2f, %.2f\n ", asin(0.5), sin(3.1415 / 6));

@@ -106,43 +106,23 @@ void LEG::trans_from_position_to_angle(float *locale_x, float *locale_y, float l
     // _ot_motor_angle 外侧舵机角度
     float beta;
 
-    // 解算 theta
-    switch (_leg_index)
-    {
-    case LEG_0:
-        /* code */
+    float _tmp_theta;   // 解算辅助变量
 
-        theta = asin(*locale_x / (LEG_L1 + LEG_L2 * sin(LEG_IN_BETA_0)));
-
-        *locale_x = theta;
-        break;
-
-    case LEG_1:
-
-        theta = asin(*locale_x / (LEG_L1 + LEG_L2 * sin(LEG_IN_BETA_0)));
-
-        *locale_x = theta;
-
-        break;
-
-    case LEG_2:
-        /* code */
-        theta = asin(*locale_x / (LEG_L1 + LEG_L2 * sin(LEG_IN_BETA_0)));
-
-        *locale_x = theta;
-        break;
-    case LEG_3:
-        /* code */
-        theta = asin(*locale_x / (LEG_L1 + LEG_L2 * sin(LEG_IN_BETA_0)));
-
-        *locale_x = theta;
-        break;
-    }
-
-    // 解算 beta 角
-    beta = acos((LEG_L2 * cos(LEG_IN_BETA_0) - locale_z) / LEG_L2);
+    // 先解算 beta , 在赋值给 theta 进行解算
+    beta = acos((LEG_L2 * cos(LEG_IN_BETA_0) - locale_z) / LEG_L2);     // 这个 z 也有一个 范围约束 <------------- Todo
 
     *locale_y = beta;
+
+    _tmp_theta = *locale_x / (LEG_L1 + LEG_L2 * sin(beta)); 
+
+    if(abs(_tmp_theta) > 1){
+        _tmp_theta = _tmp_theta / abs(_tmp_theta);      // 强制等于 +-1
+    }
+
+    theta = asin(_tmp_theta);
+
+    *locale_x = theta;
+
 }
 
 
@@ -178,7 +158,7 @@ float LEG::convert_angle_to_9685_angle(int motor_index, float angle) // <- int m
 /// @param locale_z
 void LEG::leg_exec(float locale_x, float locale_y, float locale_z)
 {
-    // printf("LEG POS IS: %d, x: %.2f, y: %.2f, z: %.2f\n", leg_index, locale_x, locale_y, locale_z);
+    //printf("LEG POS IS: x: %.2f, y: %.2f, z: %.2f\n", locale_x, locale_y, locale_z);
     // return
 
     trans_from_position_to_angle(&locale_x, &locale_y, locale_z);
@@ -194,6 +174,7 @@ void LEG::leg_exec(float locale_x, float locale_y, float locale_z)
 
     /* printf("In_Motor INDEX IS : %d, inner angle: %.2f, Ot_Motor INDEX IS: %d, outer angle: %.2f \n", \
                         _in_motor_index, _in_motor_angle, _ot_motor_index, _ot_motor_angle); */
+    // return;
 
     MY_PCA9685_SET_ANGLE(_in_motor_index, _in_motor_angle);
     MY_PCA9685_SET_ANGLE(_ot_motor_index, _ot_motor_angle); 
@@ -369,7 +350,7 @@ void MONKEY::set_status(MONKEY_STATUS s)
 }
 
 /// @brief robot 主函数， 负责切换不同的步态
-void MONKEY::main()
+void MONKEY::main_loop()
 {
     while (true)
     {
@@ -388,7 +369,7 @@ void MONKEY::main()
             break;
 
         case X_TEST:
-            test();
+            creep();
             break;
 
         case X_ROTATE_L:
@@ -402,11 +383,14 @@ void MONKEY::main()
 }
 
 /// @brief 2步态 x 的计算函数
-/// @param t 当前 step 数
-/// @param x 
+/// @param t     当前 step 数
+/// @param x0    当前 part 的初始位置x
+/// @param T     每个 part 步数
+/// @param l     x_0 + l 是目的位置
+/// @return 
 static float walk_2_x(int t, float x0, int T, float l)
 {
-    return l / T * ( t - T / (2 * M_PI) * sin(ANGLE_2_RAD(2 * M_PI / T * t))) + x0;
+    return l / T * ( t - T / (2 * M_PI) * sin(2.0 * M_PI / T * t)) + x0;
 }
 
 /// @brief 2步态 x 的计算函数
@@ -414,7 +398,7 @@ static float walk_2_x(int t, float x0, int T, float l)
 /// @param x 
 static float walk_2_z(int t, float z0, int T, float h)
 {
-    return h / 2 * (1.0 - cos(ANGLE_2_RAD(2 * M_PI / T * t))) + z0;
+    return h / 2 * (1.0 - cos(2.0 * M_PI / T * t)) + z0;
 }
 
 /*
@@ -470,12 +454,12 @@ void MONKEY::walk(float steps, int T = 500)
     // 这里应该是计算出每条腿 xyz 然后分别执行
     //
     float leg_target_x[LEG_NUM];
-    int l = 5, h = 5;
-    float x0, xt, z0, zt;
+    int l = 2, h = 2;
+    float x0, z0;
 
     while (true)
     {
-        x0 = _robot_global_position[0];
+        x0 = 0;     // 初始位置 x
         z0 = 0;
 
         leg_target_x[LEG_0] = - HALF_ROBOT_WIDTH;
@@ -483,15 +467,15 @@ void MONKEY::walk(float steps, int T = 500)
         leg_target_x[LEG_2] =   HALF_ROBOT_WIDTH;
         leg_target_x[LEG_3] = - HALF_ROBOT_WIDTH + l;
 
-        for (int i = 0; i < STEPS_PER_PART; ++i)
+        for (int i = 0; i < STEPS_PER_PART; ++i)        // <---------Todo 这里有bug pwa 的 set_Angle 超出范围  0-180， 看上去移动幅度很大，很奇怪
         {
-            set_leg_position(LEG_0, walk_2_x(i, x0, STEPS_PER_PART, leg_target_x[LEG_0]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            set_leg_position(LEG_0, walk_2_x(i, this->_leg_link_body_x[0], STEPS_PER_PART, leg_target_x[LEG_0]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
 
-            set_leg_position(LEG_1, walk_2_x(i, x0, STEPS_PER_PART, leg_target_x[LEG_1]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            set_leg_position(LEG_1, walk_2_x(i, this->_leg_link_body_x[1], STEPS_PER_PART, leg_target_x[LEG_1]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
 
-            set_leg_position(LEG_2, walk_2_x(i, x0, STEPS_PER_PART, leg_target_x[LEG_2]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            set_leg_position(LEG_2, walk_2_x(i, this->_leg_link_body_x[2], STEPS_PER_PART, leg_target_x[LEG_2]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
 
-            set_leg_position(LEG_3, walk_2_x(i, x0, STEPS_PER_PART, leg_target_x[LEG_3]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            set_leg_position(LEG_3, walk_2_x(i, this->_leg_link_body_x[3], STEPS_PER_PART, leg_target_x[LEG_3]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
 
             robot_exec();
             
