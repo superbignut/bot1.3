@@ -49,7 +49,8 @@
         "format": "cpp",
         "future": "cpp",
         "cmath": "c",
-        "complex": "c"
+        "complex": "c",
+        "uros_network_interfaces.h": "c"
     },
     "cmake.environment": {
         "IDF_PATH": "/home/superbigcar/esp/esp-idf"
