@@ -21,6 +21,7 @@
 #include "SERVO.h"
 #include "esp_timer.h"
 // #include "OSCILLATOR.h"
+#include "LROS.h"
 #include "XMONKEY.h"
 #include <cmath>
 
@@ -51,6 +52,10 @@ extern "C" void app_main(void)
     // LD14_lnlt();
 
     // wlfl_init_sta();
+
+    // vTaskDelay(2000 / portTICK_PERIOD_MS);
+
+    LRosInit();
     
     // server_task();
 
@@ -62,15 +67,15 @@ extern "C" void app_main(void)
 
     // float t = 1;
 
+    printf("Compile Successfully!\n");
+
     while(1)
     {
         // monkey.walk(1000.0, 100);
 
-        printf("Compile Successfully!\n");
-
         monkey.set_status(X_WALK_F);
 
-        monkey.main_loop();
+        // monkey.main_loop();
 
         // printf("%.2f\n", sin(++t));
 

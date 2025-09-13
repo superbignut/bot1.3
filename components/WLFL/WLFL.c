@@ -27,8 +27,7 @@
 #include "lwip/sys.h"
 
 // Connect the same WIFI with host-ubuntu.
-#define EXAMPLE_ESP_WIFI_SSID      "vivo50"
-#define EXAMPLE_ESP_WIFI_PASS      "123r5678"
+
 #define EXAMPLE_ESP_MAXIMUM_RETRY  5
 
 // Passward needless.

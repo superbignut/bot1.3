@@ -14,6 +14,8 @@
 
 #include "stdio.h"
 
+#define EXAMPLE_ESP_WIFI_SSID      "CMCC-1002"
+#define EXAMPLE_ESP_WIFI_PASS      "5qyb4x4z"
 
 #ifdef __cplusplus
 extern "C" {

@@ -50,7 +50,13 @@
         "future": "cpp",
         "cmath": "c",
         "complex": "c",
-        "uros_network_interfaces.h": "c"
+        "uros_network_interfaces.h": "c",
+        "rclc.h": "c",
+        "error_handling.h": "c",
+        "int32.h": "c",
+        "rcl.h": "c",
+        "executor.h": "c",
+        "rmw_microros.h": "c"
     },
     "cmake.environment": {
         "IDF_PATH": "/home/superbigcar/esp/esp-idf"
