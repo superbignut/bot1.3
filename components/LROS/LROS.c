@@ -33,8 +33,8 @@
 
 
 // 定义检查define
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
+#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d:fn:%s: %d. Aborting.\n",__LINE__, #fn, (int)temp_rc);vTaskDelete(NULL);}}
+#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d:fn:%s: %d. Continuing.\n",__LINE__, #fn, (int)temp_rc);}}
 
 // ROS publisher
 rcl_publisher_t publisher;
@@ -64,7 +64,7 @@ void micro_ros_task(void * arg)
 	rmw_init_options_t* rmw_options = rcl_init_options_get_rmw_init_options(&init_options); // 获取中间件 配置
 
 	// Static Agent IP and port can be used instead of autodisvery.
-	RCCHECK(rmw_uros_options_set_udp_address(LESP_WIFI_AGENT_IP, LESP_WIFI_AGENT_PORT, rmw_options)); // 配置中间件的IP !!!
+	RCCHECK(rmw_uros_options_set_udp_address("192.168.1.8", "35557", rmw_options)); // 配置中间件的IP !!!
 	//RCCHECK(rmw_uros_discover_agent(rmw_options));
 #endif
 
@@ -100,7 +100,7 @@ void micro_ros_task(void * arg)
 	msg.data = 0;
 
 	while(1){
-		rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));      // 执行器启动
+		rclc_executor_spin_some(&executor, RCL_MS_TO_NS(1000));      // 执行器启动
 		usleep(10000);
 	}
 
