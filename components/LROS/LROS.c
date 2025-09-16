@@ -72,6 +72,7 @@ void micro_ros_task(void * arg)
 	RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator));      // 初始化 support
 
 	// create node
+	
 	rcl_node_t node;
 	RCCHECK(rclc_node_init_default(&node, "l_int32_publisher", "", &support));      // 创建ROS 节点
 
@@ -120,7 +121,7 @@ void LRosInit()
 	//pin micro-ros task in APP_CPU to make PRO_CPU to deal with wifi:
     xTaskCreate(micro_ros_task,
             "uros_task",
-            24000,
+            48000,
             NULL,
             5,
             NULL);
