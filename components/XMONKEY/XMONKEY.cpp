@@ -555,34 +555,11 @@ void MONKEY::trans_from_robot_to_leg(int leg_index, float *leg_global_x, float *
     */
    
     // 不同的leg 是不同的 link-point
-    switch (leg_index)
-    {
-    case LEG_0:
-        *leg_global_x = *leg_global_x - _leg_link_body_x[LEG_0];
-        *leg_global_y = *leg_global_y - _leg_link_body_y[LEG_0];
-        *leg_global_z = *leg_global_z;
-        break;
-    case LEG_1:
-        *leg_global_x = *leg_global_x - _leg_link_body_x[LEG_1];
-        *leg_global_y = *leg_global_y - _leg_link_body_y[LEG_1];
-        *leg_global_z = *leg_global_z;
-        break;
 
-    case LEG_2:
-        *leg_global_x = *leg_global_x - _leg_link_body_x[LEG_2];
-        *leg_global_y = *leg_global_y - _leg_link_body_y[LEG_2];
-        *leg_global_z = *leg_global_z;
-        break;
 
-    case LEG_3:
-        *leg_global_x = *leg_global_x - _leg_link_body_x[LEG_3];
-        *leg_global_y = *leg_global_y - _leg_link_body_y[LEG_3];
-        *leg_global_z = *leg_global_z;
-        break;
-
-    default:
-        break;
-    }
+    *leg_global_x = *leg_global_x - _leg_link_body_x[leg_index];
+    *leg_global_y = *leg_global_y - _leg_link_body_y[leg_index];
+    *leg_global_z = *leg_global_z;
 }
 
 /// @brief 设置腿的全局位置, 函数内的 trans 会将 全局位置转换为 locale 位置 存于成员变量 _leg_locale_position 中
