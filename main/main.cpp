@@ -55,7 +55,7 @@ extern "C" void app_main(void)
 
     // vTaskDelay(2000 / portTICK_PERIOD_MS);
 
-    LRosInit();
+    // LRosInit(); // ros 发布节点初始化
     
     // server_task();
 
@@ -75,7 +75,7 @@ extern "C" void app_main(void)
 
         monkey.set_status(X_WALK_F);
 
-        // monkey.main_loop();
+        monkey.main_loop();
 
         // printf("%.2f\n", sin(++t));
 

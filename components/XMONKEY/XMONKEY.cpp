@@ -109,15 +109,23 @@ void LEG::trans_from_position_to_angle(float *locale_x, float *locale_y, float l
     float _tmp_theta;   // 解算辅助变量
 
     // 先解算 beta , 在赋值给 theta 进行解算
+
+    //  printf("z is %.2f\n", locale_z);
+
     beta = acos((LEG_L2 * cos(LEG_IN_BETA_0) - locale_z) / LEG_L2);     // 这个 z 也有一个 范围约束 <------------- Todo
+
+    // printf("z is %.2f\n", RAD_2_ANGLE(beta));
 
     *locale_y = beta;
 
+    // printf("locale x is %.2f, l1 + l2 * sin theta: %.2f\n",*locale_x,  LEG_L1 + LEG_L2 * sin(beta));
+
     _tmp_theta = *locale_x / (LEG_L1 + LEG_L2 * sin(beta)); 
 
-    if(abs(_tmp_theta) > 1){
+    /*     if(abs(_tmp_theta) > 1){
         _tmp_theta = _tmp_theta / abs(_tmp_theta);      // 强制等于 +-1
-    }
+        }
+    */
 
     theta = asin(_tmp_theta);
 
@@ -158,13 +166,13 @@ float LEG::convert_angle_to_9685_angle(int motor_index, float angle) // <- int m
 /// @param locale_z
 void LEG::leg_exec(float locale_x, float locale_y, float locale_z)
 {
-    //printf("LEG POS IS: x: %.2f, y: %.2f, z: %.2f\n", locale_x, locale_y, locale_z);
+    // printf("LEG POS IS: x: %.2f, y: %.2f, z: %.2f\n", locale_x, locale_y, locale_z);
     // return
 
-    trans_from_position_to_angle(&locale_x, &locale_y, locale_z);
+    trans_from_position_to_angle(&locale_x, &locale_y, locale_z);       //  x = -33.75
 
-    /* printf("LEG ANGLE IS: %d, x: %.2f, y: %.2f, z: %.2f\n", leg_index, locale_x, locale_y, locale_z);
-    return; */
+    // printf("LEG LOCALE ANGLE x: %.2f, y: %.2f \n", RAD_2_ANGLE(locale_x), RAD_2_ANGLE(locale_y));
+    // return;
 
     /* printf("Origin : In_Motor INDEX IS : %d, inner angle: %.2f, Ot_Motor INDEX IS: %d, outer angle: %.2f \n", \
                     _in_motor_index, RAD_2_ANGLE(locale_x), _ot_motor_index, RAD_2_ANGLE(locale_y)); */
@@ -453,8 +461,8 @@ void MONKEY::walk(float steps, int T = 500)
     //                       <------ Todo
     // 这里应该是计算出每条腿 xyz 然后分别执行
     //
-    float leg_target_x[LEG_NUM];
-    int l = 2, h = 2;
+    float leg_target_x_l[LEG_NUM];
+    int l = 15, h = 4;
     float x0, z0;
 
     while (true)
@@ -462,24 +470,46 @@ void MONKEY::walk(float steps, int T = 500)
         x0 = 0;     // 初始位置 x
         z0 = 0;
 
-        leg_target_x[LEG_0] = - HALF_ROBOT_WIDTH;
-        leg_target_x[LEG_1] =   HALF_ROBOT_WIDTH + l;
-        leg_target_x[LEG_2] =   HALF_ROBOT_WIDTH;
-        leg_target_x[LEG_3] = - HALF_ROBOT_WIDTH + l;
+        leg_target_x_l[LEG_0] = 0;
+        leg_target_x_l[LEG_1] = l;
+        leg_target_x_l[LEG_2] = 0;
+        leg_target_x_l[LEG_3] = l;
 
         for (int i = 0; i < STEPS_PER_PART; ++i)        // <---------Todo 这里有bug pwa 的 set_Angle 超出范围  0-180， 看上去移动幅度很大，很奇怪
         {
-            set_leg_position(LEG_0, walk_2_x(i, this->_leg_link_body_x[0], STEPS_PER_PART, leg_target_x[LEG_0]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            set_leg_position(LEG_0, walk_2_x(i, this->_leg_link_body_x[0], STEPS_PER_PART, leg_target_x_l[LEG_0]), 0, walk_2_z(i, z0, STEPS_PER_PART, 0));
 
-            set_leg_position(LEG_1, walk_2_x(i, this->_leg_link_body_x[1], STEPS_PER_PART, leg_target_x[LEG_1]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            set_leg_position(LEG_1, walk_2_x(i, this->_leg_link_body_x[1], STEPS_PER_PART, leg_target_x_l[LEG_1]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
 
-            set_leg_position(LEG_2, walk_2_x(i, this->_leg_link_body_x[2], STEPS_PER_PART, leg_target_x[LEG_2]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            set_leg_position(LEG_2, walk_2_x(i, this->_leg_link_body_x[2], STEPS_PER_PART, leg_target_x_l[LEG_2]), 0, walk_2_z(i, z0, STEPS_PER_PART, 0));
 
-            set_leg_position(LEG_3, walk_2_x(i, this->_leg_link_body_x[3], STEPS_PER_PART, leg_target_x[LEG_3]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            set_leg_position(LEG_3, walk_2_x(i, this->_leg_link_body_x[3], STEPS_PER_PART, leg_target_x_l[LEG_3]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
 
             robot_exec();
             
-            vTaskDelay(200 / portTICK_PERIOD_MS);
+            vTaskDelay(20 / portTICK_PERIOD_MS);
+        }
+        
+
+
+        leg_target_x_l[LEG_0] = l;
+        leg_target_x_l[LEG_1] = 0;
+        leg_target_x_l[LEG_2] = l;
+        leg_target_x_l[LEG_3] = 0;
+
+        for (int i = 0; i < STEPS_PER_PART; ++i)        // <---------Todo 这里有bug pwa 的 set_Angle 超出范围  0-180， 看上去移动幅度很大，很奇怪
+        {
+            set_leg_position(LEG_0, walk_2_x(i, this->_leg_link_body_x[0], STEPS_PER_PART, leg_target_x_l[LEG_0]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+
+            set_leg_position(LEG_1, walk_2_x(i, this->_leg_link_body_x[1], STEPS_PER_PART, leg_target_x_l[LEG_1]), 0, walk_2_z(i, z0, STEPS_PER_PART, 0));
+
+            set_leg_position(LEG_2, walk_2_x(i, this->_leg_link_body_x[2], STEPS_PER_PART, leg_target_x_l[LEG_2]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+
+            set_leg_position(LEG_3, walk_2_x(i, this->_leg_link_body_x[3], STEPS_PER_PART, leg_target_x_l[LEG_3]), 0, walk_2_z(i, z0, STEPS_PER_PART, 0));
+
+            robot_exec();
+            
+            vTaskDelay(20 / portTICK_PERIOD_MS);
         }
 
         // part 2
@@ -534,19 +564,19 @@ void MONKEY::trans_from_robot_to_leg(int leg_index, float *leg_global_x, float *
         break;
     case LEG_1:
         *leg_global_x = *leg_global_x - _leg_link_body_x[LEG_1];
-        *leg_global_y = *leg_global_y - _leg_link_body_x[LEG_1];
+        *leg_global_y = *leg_global_y - _leg_link_body_y[LEG_1];
         *leg_global_z = *leg_global_z;
         break;
 
     case LEG_2:
         *leg_global_x = *leg_global_x - _leg_link_body_x[LEG_2];
-        *leg_global_y = *leg_global_y - _leg_link_body_x[LEG_2];
+        *leg_global_y = *leg_global_y - _leg_link_body_y[LEG_2];
         *leg_global_z = *leg_global_z;
         break;
 
     case LEG_3:
         *leg_global_x = *leg_global_x - _leg_link_body_x[LEG_3];
-        *leg_global_y = *leg_global_y - _leg_link_body_x[LEG_3];
+        *leg_global_y = *leg_global_y - _leg_link_body_y[LEG_3];
         *leg_global_z = *leg_global_z;
         break;
 
