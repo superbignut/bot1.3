@@ -390,9 +390,23 @@ void MONKEY::main_loop()
     }
 }
 
+/* /// @brief 拷贝数组
+/// @param src 
+/// @param des 
+/// @param num 
+static void array_copy(int *src, int *des, int num)
+{
+
+    for(int i =0; i< num; ++i)
+    {
+        des[i] = src[i];
+    }
+}
+ */
+
 /// @brief 2步态 x 的计算函数
 /// @param t     当前 step 数
-/// @param x0    当前 part 的初始位置x
+/// @param x0    当前 part 的初始位置x, 是全局坐标
 /// @param T     每个 part 步数
 /// @param l     x_0 + l 是目的位置
 /// @return 
@@ -461,59 +475,88 @@ void MONKEY::walk(float steps, int T = 500)
     //                       <------ Todo
     // 这里应该是计算出每条腿 xyz 然后分别执行
     //
-    float leg_target_x_l[LEG_NUM];
-    int l = 15, h = 4;
-    float x0, z0;
+    float x_inc[LEG_NUM];
+    int le = 10, h = 4;
+
+    float x0[LEG_NUM];
+    float z0[LEG_NUM];
+    
+    // 步态初始化 
+
+    {
+        set_leg_position(LEG_0, -HALF_ROBOT_WIDTH + le, 0, 0); 
+
+        set_leg_position(LEG_1,  HALF_ROBOT_WIDTH - le, 0, 0); 
+
+        set_leg_position(LEG_2,  HALF_ROBOT_WIDTH + le, 0, 0); 
+
+        set_leg_position(LEG_3, -HALF_ROBOT_WIDTH - le, 0, 0); 
+
+        robot_exec();
+    }
+
+    le *= 2;
 
     while (true)
     {
-        x0 = 0;     // 初始位置 x
-        z0 = 0;
-
-        leg_target_x_l[LEG_0] = 0;
-        leg_target_x_l[LEG_1] = l;
-        leg_target_x_l[LEG_2] = 0;
-        leg_target_x_l[LEG_3] = l;
-
-        for (int i = 0; i < STEPS_PER_PART; ++i)        // <---------Todo 这里有bug pwa 的 set_Angle 超出范围  0-180， 看上去移动幅度很大，很奇怪
+        
+        // 获取全局初始坐标
+        for(int l = 0; l < LEG_NUM; ++l)
         {
-            set_leg_position(LEG_0, walk_2_x(i, this->_leg_link_body_x[0], STEPS_PER_PART, leg_target_x_l[LEG_0]), 0, walk_2_z(i, z0, STEPS_PER_PART, 0));
+            x0[l] = _leg_global_position[l][0];
+            z0[l] = _leg_global_position[l][2];
+        }
 
-            set_leg_position(LEG_1, walk_2_x(i, this->_leg_link_body_x[1], STEPS_PER_PART, leg_target_x_l[LEG_1]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+        // 设置移动增量
+        x_inc[LEG_0] = -le;
+        x_inc[LEG_1] =  le;
+        x_inc[LEG_2] = -le;
+        x_inc[LEG_3] =  le;
 
-            set_leg_position(LEG_2, walk_2_x(i, this->_leg_link_body_x[2], STEPS_PER_PART, leg_target_x_l[LEG_2]), 0, walk_2_z(i, z0, STEPS_PER_PART, 0));
+        // 四肢移动
+        for (int i = 0; i < STEPS_PER_PART; ++i)
+        {
+            set_leg_position(LEG_0, walk_2_x(i, x0[LEG_0], STEPS_PER_PART, x_inc[LEG_0]), 0, walk_2_z(i, z0[LEG_0], STEPS_PER_PART, 0));
 
-            set_leg_position(LEG_3, walk_2_x(i, this->_leg_link_body_x[3], STEPS_PER_PART, leg_target_x_l[LEG_3]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            set_leg_position(LEG_1, walk_2_x(i, x0[LEG_1], STEPS_PER_PART, x_inc[LEG_1]), 0, walk_2_z(i, z0[LEG_1], STEPS_PER_PART, h));
+
+            set_leg_position(LEG_2, walk_2_x(i, x0[LEG_2], STEPS_PER_PART, x_inc[LEG_2]), 0, walk_2_z(i, z0[LEG_2], STEPS_PER_PART, 0));
+
+            set_leg_position(LEG_3, walk_2_x(i, x0[LEG_3], STEPS_PER_PART, x_inc[LEG_3]), 0, walk_2_z(i, z0[LEG_3], STEPS_PER_PART, h));
 
             robot_exec();
             
-            vTaskDelay(20 / portTICK_PERIOD_MS);
+            vTaskDelay(10 / portTICK_PERIOD_MS);
         }
         
-
-
-        leg_target_x_l[LEG_0] = l;
-        leg_target_x_l[LEG_1] = 0;
-        leg_target_x_l[LEG_2] = l;
-        leg_target_x_l[LEG_3] = 0;
-
-        for (int i = 0; i < STEPS_PER_PART; ++i)        // <---------Todo 这里有bug pwa 的 set_Angle 超出范围  0-180， 看上去移动幅度很大，很奇怪
+        // 获取全局初始坐标
+        for(int l = 0; l < LEG_NUM; ++l)
         {
-            set_leg_position(LEG_0, walk_2_x(i, this->_leg_link_body_x[0], STEPS_PER_PART, leg_target_x_l[LEG_0]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            x0[l] = _leg_global_position[l][0];
+            z0[l] = _leg_global_position[l][2];
+        }
+        
+        // 设置移动增量
+        x_inc[LEG_0] =  le;
+        x_inc[LEG_1] = -le;
+        x_inc[LEG_2] =  le;
+        x_inc[LEG_3] = -le;
 
-            set_leg_position(LEG_1, walk_2_x(i, this->_leg_link_body_x[1], STEPS_PER_PART, leg_target_x_l[LEG_1]), 0, walk_2_z(i, z0, STEPS_PER_PART, 0));
+        // 四肢移动
+        for (int i = 0; i < STEPS_PER_PART; ++i)
+        {
+            set_leg_position(LEG_0, walk_2_x(i, x0[LEG_0], STEPS_PER_PART, x_inc[LEG_0]), 0, walk_2_z(i, z0[LEG_0], STEPS_PER_PART, h));
 
-            set_leg_position(LEG_2, walk_2_x(i, this->_leg_link_body_x[2], STEPS_PER_PART, leg_target_x_l[LEG_2]), 0, walk_2_z(i, z0, STEPS_PER_PART, h));
+            set_leg_position(LEG_1, walk_2_x(i, x0[LEG_1], STEPS_PER_PART, x_inc[LEG_1]), 0, walk_2_z(i, z0[LEG_1], STEPS_PER_PART, 0));
 
-            set_leg_position(LEG_3, walk_2_x(i, this->_leg_link_body_x[3], STEPS_PER_PART, leg_target_x_l[LEG_3]), 0, walk_2_z(i, z0, STEPS_PER_PART, 0));
+            set_leg_position(LEG_2, walk_2_x(i, x0[LEG_2], STEPS_PER_PART, x_inc[LEG_2]), 0, walk_2_z(i, z0[LEG_2], STEPS_PER_PART, h));
+
+            set_leg_position(LEG_3, walk_2_x(i, x0[LEG_3], STEPS_PER_PART, x_inc[LEG_3]), 0, walk_2_z(i, z0[LEG_3], STEPS_PER_PART, 0));
 
             robot_exec();
             
-            vTaskDelay(20 / portTICK_PERIOD_MS);
+            vTaskDelay(10 / portTICK_PERIOD_MS);
         }
-
-        // part 2
-        // 进入下一个 part
     }
 }
 
@@ -571,10 +614,15 @@ void MONKEY::trans_from_robot_to_leg(int leg_index, float *leg_global_x, float *
 /// @param leg_global_z
 void MONKEY::set_leg_position(int leg_index, float leg_global_x, float leg_global_y, float leg_global_z)
 {
+    // 设置全局坐标
+    _leg_global_position[leg_index][0] = leg_global_x;
+    _leg_global_position[leg_index][1] = leg_global_y;
+    _leg_global_position[leg_index][2] = leg_global_z;
+    
     // 转换: 之所以使用引用是把返回值 直接 对参数进行了替换
     trans_from_robot_to_leg(leg_index, &leg_global_x, &leg_global_y, &leg_global_z);
 
-    // 转换结果保存起来， 其实如果把 robot_exec 吸收进来， 就不需要这个成员变量了 <-------- Todo
+    // 设置局部变量
     _leg_locale_position[leg_index][0] = leg_global_x;
     _leg_locale_position[leg_index][1] = leg_global_y;
     _leg_locale_position[leg_index][2] = leg_global_z;

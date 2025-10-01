@@ -174,7 +174,9 @@ private:
     
     float _robot_global_position[3];   // robot's xyz 
 
-    float _leg_locale_position[LEG_NUM][3];
+    float _leg_locale_position[LEG_NUM][3]; // leg 局部坐标
+    
+    float _leg_global_position[LEG_NUM][3]; // leg 全局坐标
 
     MONKEY_STATUS _robot_status;    // 使用这个全局状态的切换来 控制不同的步态 
 
