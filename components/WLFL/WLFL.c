@@ -25,6 +25,12 @@
 
 #include "lwip/err.h"
 #include "lwip/sys.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+#define PORT 1234  // 监听端口
 
 // Connect the same WIFI with host-ubuntu.
 
@@ -198,4 +204,77 @@ void get_ip_address_str(char *addr, int len)
     {
         ESP_LOGI("Error ", "Failed to get ip addr.");
     }
+}
+
+void my_tcp_server_task(void *pvParameters) {
+    char addr_str[128];
+    int addr_family = AF_INET;
+    int ip_protocol = IPPROTO_IP;
+    struct sockaddr_in dest_addr;
+
+    // 创建本地 socket
+    int sock = socket(addr_family, SOCK_STREAM, ip_protocol);
+    if (sock < 0) {
+        ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    // 配置 socket 监听地址
+    dest_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_port = htons(PORT);
+
+    // socket 绑定 监听地址
+    if (bind(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) < 0) {
+        ESP_LOGE(TAG, "Socket unable to bind: errno %d", errno);
+        close(sock);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    // 预备监听
+    if (listen(sock, 1) < 0) {
+        ESP_LOGE(TAG, "Error occurred during listen: errno %d", errno);
+        close(sock);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    ESP_LOGI(TAG, "Socket listening on port %d", PORT);
+
+    // 循环等待连接
+    while (1) {
+        struct sockaddr_in source_addr;
+        socklen_t addr_len = sizeof(source_addr);
+        // 阻塞等待连接
+        int client_sock = accept(sock, (struct sockaddr *)&source_addr, &addr_len);
+        if (client_sock < 0) {
+            ESP_LOGE(TAG, "Unable to accept connection: errno %d", errno);
+            break;
+        }
+
+        ESP_LOGI(TAG, "Socket accepted");
+        // 获取连接ip地址
+        inet_ntoa_r(source_addr.sin_addr.s_addr, addr_str, sizeof(addr_str) - 1);
+        ESP_LOGI(TAG, "Client IP: %s", addr_str);
+
+        /*         char payload[] = "Hello from ESP32!";
+        write(client_sock, payload, strlen(payload)); */
+        // 配置接收 buffer
+        char recv_buf[64];
+        int len = read(client_sock, recv_buf, sizeof(recv_buf) - 1);
+        if (len < 0) {
+            ESP_LOGE(TAG, "Recv failed: errno %d", errno);
+        } else {
+            recv_buf[len] = 0;  // Null-terminate
+            ESP_LOGI(TAG, "Received: %s", recv_buf);
+        }
+
+        shutdown(client_sock, 0);
+        close(client_sock);
+    }
+
+    close(sock);
+    vTaskDelete(NULL);
 }

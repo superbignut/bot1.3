@@ -27,6 +27,8 @@ void get_ip_address_uint16(uint16_t *addr);
 
 void get_ip_address_str(char *addr, int len);
 
+void my_tcp_server_task(void *pvParameters);
+
 #ifdef __cplusplus
 }
 #endif

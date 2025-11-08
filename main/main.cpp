@@ -51,11 +51,14 @@ extern "C" void app_main(void)
 
     // LD14_lnlt();
 
-    // wlfl_init_sta();
+    wlfl_init_sta();
+
+    // 启动监听进程
+    xTaskCreate(my_tcp_server_task, "tcp_server", 4096, NULL, 5, NULL);
 
     // vTaskDelay(2000 / portTICK_PERIOD_MS);
 
-    LRosInit(); // ros 发布节点初始化
+    // LRosInit(); // ros 发布节点初始化
     
     // server_task();
 
