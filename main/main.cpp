@@ -45,7 +45,7 @@ extern "C" void app_main(void)
 
     create_PCA9685_New_Task();
 
-    MONKEY monkey;
+    // MONKEY monkey;
     
     // esp_timer_init(); // 全局初始化，以便后续调用获取 时间函数
 
@@ -55,7 +55,7 @@ extern "C" void app_main(void)
 
     // vTaskDelay(2000 / portTICK_PERIOD_MS);
 
-    // LRosInit(); // ros 发布节点初始化
+    LRosInit(); // ros 发布节点初始化
     
     // server_task();
 
@@ -73,14 +73,32 @@ extern "C" void app_main(void)
     {
         // monkey.walk(1000.0, 100);
 
-        monkey.set_status(X_WALK_F);
+        // monkey.set_status(X_WALK_F);
 
-        monkey.main_loop();
+        // monkey.main_loop();
 
         // printf("%.2f\n", sin(++t));
+        for(int i=0; i<8; ++i)
+        {
+            MY_PCA9685_SET_ANGLE(i, 90);
+        }
+        
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        
+        for(int i=0; i<8; ++i)
+        {
+            // MY_PCA9685_SET_ANGLE(i, 60);
+        }
+        
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        
+        for(int i=0; i<8; ++i)
+        {
+            // MY_PCA9685_SET_ANGLE(i, 120);
+        }
 
         
-        vTaskDelay(200 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
         // printf("%.2f, %.2f\n ", asin(0.5), sin(3.1415 / 6));
     }
 }

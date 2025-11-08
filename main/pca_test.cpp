@@ -62,7 +62,7 @@
 #define MIN_DUTY_NUM 0.5 // 0.5ms  angle = 0
 #define MAX_DUTY_NUM 2.5 // 2.5ms  angle = 180
 
-/// @brief Convert angle (0-180)to relative time (0-20ms) to 9685's 4096's register num.
+/* /// @brief Convert angle (0-180)to relative time (0-20ms) to 9685's 4096's register num.
 /// @param angle 
 /// @return 
 int PCA_9685_Angle_to_Num(int angle)
@@ -82,7 +82,7 @@ void MY_PCA9685_SET_ANGLE(uint8_t pin, float angle)
     setPWM(pin, 0, PCA_9685_Angle_to_Num(angle));   // on
 
     // 如果有问题， 这里可以加一点 delay
-}
+} */
 
 static char tag[] = "PCA9685";
 

@@ -9,3 +9,4 @@
     5. wifi
         + sta done
         + socket ...
++ sudo docker run -it --net=host microros/micro-ros-agent:kilted udp4 --port 35557 -v6
