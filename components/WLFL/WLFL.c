@@ -206,6 +206,34 @@ void get_ip_address_str(char *addr, int len)
     }
 }
 
+// 接收socket连接后的处理函数
+void client_socket_task(void *pvParameters) {
+    int client_sock = *(int *)pvParameters;
+    
+    // 配置接收 buffer
+    char recv_buf[64];
+    while (1) {
+        int len = read(client_sock, recv_buf, sizeof(recv_buf) - 1);
+        if (len < 0) {
+            ESP_LOGE(TAG, "Recv failed: errno %d", errno);
+            break;
+        } else if (len == 0) {
+            ESP_LOGI(TAG, "Connection closed by client");
+            break;
+        } else {
+            recv_buf[len] = 0;  // Null-terminate
+            ESP_LOGI(TAG, "Received: %s, Len: %d", recv_buf, strlen(recv_buf));
+            // 在这里可以添加处理接收到的消息的逻辑
+        }
+    }
+
+    // 关闭 socket
+    shutdown(client_sock, 0);
+    close(client_sock);
+    vTaskDelete(NULL);  // 删除任务
+}
+
+// 监听进程
 void my_tcp_server_task(void *pvParameters) {
     char addr_str[128];
     int addr_family = AF_INET;
@@ -259,22 +287,27 @@ void my_tcp_server_task(void *pvParameters) {
         inet_ntoa_r(source_addr.sin_addr.s_addr, addr_str, sizeof(addr_str) - 1);
         ESP_LOGI(TAG, "Client IP: %s", addr_str);
 
-        /*         char payload[] = "Hello from ESP32!";
-        write(client_sock, payload, strlen(payload)); */
         // 配置接收 buffer
-        char recv_buf[64];
+        /*char recv_buf[64];
         int len = read(client_sock, recv_buf, sizeof(recv_buf) - 1);
         if (len < 0) {
             ESP_LOGE(TAG, "Recv failed: errno %d", errno);
         } else {
             recv_buf[len] = 0;  // Null-terminate
             ESP_LOGI(TAG, "Received: %s", recv_buf);
-        }
+        } */
 
-        shutdown(client_sock, 0);
-        close(client_sock);
+        int *client_sock_ptr = (int *)malloc(sizeof(int));
+        *client_sock_ptr = client_sock;
+        if (xTaskCreate(client_socket_task, "client_socket_task", 4096, client_sock_ptr, 5, NULL) != pdPASS) {
+            ESP_LOGE(TAG, "Failed to create task");
+            free(client_sock_ptr);
+            shutdown(client_sock, 0);
+            close(client_sock);
+        }
     }
 
     close(sock);
     vTaskDelete(NULL);
 }
+

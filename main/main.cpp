@@ -81,27 +81,13 @@ extern "C" void app_main(void)
         // monkey.main_loop();
 
         // printf("%.2f\n", sin(++t));
-        for(int i=0; i<8; ++i)
+        for(int i=0; i<16 ; ++i)
         {
             MY_PCA9685_SET_ANGLE(i, 90);
         }
         
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        
-        for(int i=0; i<8; ++i)
-        {
-            // MY_PCA9685_SET_ANGLE(i, 60);
-        }
-        
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        
-        for(int i=0; i<8; ++i)
-        {
-            // MY_PCA9685_SET_ANGLE(i, 120);
-        }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
 
         
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        // printf("%.2f, %.2f\n ", asin(0.5), sin(3.1415 / 6));
     }
 }
