@@ -1,8 +1,8 @@
 idf_component_register(
-    SRCS "WLFL.c" 
+    SRCS "XSNAKE.c" 
 
     INCLUDE_DIRS "include"
 
-    REQUIRES driver esp_wifi nvs_flash XSNAKE
+    REQUIRES driver esp_timer PCA9685
     
     PRIV_REQUIRES)

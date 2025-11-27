@@ -1,6 +1,6 @@
 import socket
 
-ESP32_IP = "192.168.1.9"  # 替换为ESP32的实际IP地址
+ESP32_IP = "192.168.1.11"  # 替换为ESP32的实际IP地址
 ESP32_PORT = 1234          # 与ESP32代码中的端口一致
 
 def main():

@@ -22,14 +22,13 @@
 #include "esp_timer.h"
 // #include "OSCILLATOR.h"
 #include "LROS.h"
-#include "XMONKEY.h"
+// #include "XMONKEY.h"
+#include "XSNAKE.h"
 #include <cmath>
-
-static const char *TAG = "Example";
 
 // extern void task_PCA9685(void *ignore);
 
-
+extern SNAKE global_snake;
 
 extern "C" void app_main(void)
 {   
@@ -46,6 +45,8 @@ extern "C" void app_main(void)
     create_PCA9685_New_Task();
 
     // MONKEY monkey;
+
+
     
     // esp_timer_init(); // 全局初始化，以便后续调用获取 时间函数
 
@@ -53,8 +54,9 @@ extern "C" void app_main(void)
 
     wlfl_init_sta();
 
-    // 启动监听进程
+    // 启动命令监听进程
     xTaskCreate(my_tcp_server_task, "tcp_server", 4096, NULL, 5, NULL);
+    // xTaskCreate(SNAKE::socketCB, "tcp_server", 4096, NULL, 5, NULL);
 
     // vTaskDelay(2000 / portTICK_PERIOD_MS);
 
@@ -74,20 +76,43 @@ extern "C" void app_main(void)
 
     while(1)
     {
-        // monkey.walk(1000.0, 100);
-
-        // monkey.set_status(X_WALK_F);
-
-        // monkey.main_loop();
-
-        // printf("%.2f\n", sin(++t));
-        for(int i=0; i<16 ; ++i)
+        if (global_snake.socketCmd == 0)
         {
-            MY_PCA9685_SET_ANGLE(i, 90);
+            for(int i=0; i<16 ; ++i)
+            {
+                MY_PCA9685_SET_ANGLE(i, 120);
+            }
         }
-        
+        else if (global_snake.socketCmd == 1)
+        {
+            for(int i=0; i<16 ; ++i)
+            {
+                MY_PCA9685_SET_ANGLE(i, 60);
+            }
+        } else if (global_snake.socketCmd == 2)
+        {
+            for(int i=0; i<16 ; ++i)
+            {
+                MY_PCA9685_SET_ANGLE(i, 130);
+            }
+        }
+        else if (global_snake.socketCmd == 3)
+        {
+            for(int i=0; i<16 ; ++i)
+            {
+                MY_PCA9685_SET_ANGLE(i, 50);
+            }
+        } else if (global_snake.socketCmd == 4)
+        {
+            for(int i=0; i<16 ; ++i)
+            {
+                MY_PCA9685_SET_ANGLE(i, 140);
+            }
+        }
+                
         vTaskDelay(100 / portTICK_PERIOD_MS);
 
-        
+        printf("%d\n", global_snake.socketCmd);
+
     }
 }
