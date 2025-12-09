@@ -30,6 +30,8 @@
 
 extern SNAKE global_snake;
 
+extern void adc_main(void);
+
 extern "C" void app_main(void)
 {   
 
@@ -71,6 +73,8 @@ extern "C" void app_main(void)
     // task_PCA9685(NULL);
 
     // float t = 1;
+
+    adc_main(); // 进行 adc读取
 
     printf("Compile Successfully!\n");
 
