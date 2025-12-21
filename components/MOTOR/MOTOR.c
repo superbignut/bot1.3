@@ -21,8 +21,8 @@
 #include "freertos/queue.h"
 
 // left wheel
-#define DRV8833_AIN1_GPIO       GPIO_NUM_22
-#define DRV8833_AIN2_GPIO       GPIO_NUM_23
+#define DRV8833_AIN1_GPIO       GPIO_NUM_16
+#define DRV8833_AIN2_GPIO       GPIO_NUM_17
 
 // right wheel
 #define DRV8833_BIN1_GPIO       GPIO_NUM_19
@@ -246,7 +246,7 @@ static void pwm_init()
     };
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel1));
 
-    // pwm2
+    /* // pwm2
     ledc_timer_config_t ledc_timer2 = {
         .speed_mode         = PWM_MODE,                    // speed
         .duty_resolution    = PWM_DUTY_RES,               // count resolution
@@ -287,7 +287,7 @@ static void pwm_init()
         .duty               = 0,                            // duty = 0
         .hpoint             = 0,
     };
-    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel3));
+    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel3)); */
 
 }
 /// @brief Set pwm0 duty.
@@ -339,8 +339,8 @@ static void move_forward()
     double duty = 0.5;
     set_pwm_0(duty);
     set_pwm_1(0);
-    set_pwm_3(duty); // 0132 is because two motors has opposite orientation.
-    set_pwm_2(0);
+    // set_pwm_3(duty); // 0132 is because two motors has opposite orientation.
+    // set_pwm_2(0);
 }
 
 static void move_back()
@@ -366,7 +366,7 @@ static void right_control()
 void motor_init()
 {
     pwm_init();
-    pcnt_init();
+    // pcnt_init();
 }
 
 /// @brief Use speed and angle control car's movement.

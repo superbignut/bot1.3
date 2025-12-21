@@ -74,6 +74,11 @@ extern "C" void app_main(void)
 
     // float t = 1;
 
+    motor_init();
+
+    motor_control(1, 0);
+    
+
     adc_main(); // 进行 adc读取
 
     printf("Compile Successfully!\n");
