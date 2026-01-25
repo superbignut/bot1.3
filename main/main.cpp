@@ -32,6 +32,8 @@ extern SNAKE global_snake;
 
 extern void adc_main(void);
 
+extern void mesh_main(void);
+
 extern "C" void app_main(void)
 {   
 
@@ -43,82 +45,26 @@ extern "C" void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
+    // wlfl_init_sta();
 
-    create_PCA9685_New_Task();
+    // 启动XSNAKE命令监听进程
+    // xTaskCreate(my_tcp_server_task, "tcp_server", 4096, NULL, 5, NULL);
 
-    // MONKEY monkey;
+    // 启动pwm电机初始化
+    // motor_init();
 
-
+    // 电机控制
+    // motor_control(1, 0);
     
-    // esp_timer_init(); // 全局初始化，以便后续调用获取 时间函数
+    // 进行 adc读取
+    // adc_main(); 
 
-    // LD14_lnlt();
-
-    wlfl_init_sta();
-
-    // 启动命令监听进程
-    xTaskCreate(my_tcp_server_task, "tcp_server", 4096, NULL, 5, NULL);
-    // xTaskCreate(SNAKE::socketCB, "tcp_server", 4096, NULL, 5, NULL);
-
-    // vTaskDelay(2000 / portTICK_PERIOD_MS);
-
-    // LRosInit(); // ros 发布节点初始化
-    
-    // server_task();
-
-    // pca9685_init();
-    
-    // xTaskCreate(task_PCA9685, "task_PCA9685", 1024 * 2, (void* ) 0, 10, NULL);
-
-    // task_PCA9685(NULL);
-
-    // float t = 1;
-
-    motor_init();
-
-    motor_control(1, 0);
-    
-
-    adc_main(); // 进行 adc读取
+    mesh_main();
 
     printf("Compile Successfully!\n");
 
     while(1)
-    {
-        if (global_snake.socketCmd == 0)
-        {
-            for(int i=0; i<16 ; ++i)
-            {
-                MY_PCA9685_SET_ANGLE(i, 120);
-            }
-        }
-        else if (global_snake.socketCmd == 1)
-        {
-            for(int i=0; i<16 ; ++i)
-            {
-                MY_PCA9685_SET_ANGLE(i, 60);
-            }
-        } else if (global_snake.socketCmd == 2)
-        {
-            for(int i=0; i<16 ; ++i)
-            {
-                MY_PCA9685_SET_ANGLE(i, 130);
-            }
-        }
-        else if (global_snake.socketCmd == 3)
-        {
-            for(int i=0; i<16 ; ++i)
-            {
-                MY_PCA9685_SET_ANGLE(i, 50);
-            }
-        } else if (global_snake.socketCmd == 4)
-        {
-            for(int i=0; i<16 ; ++i)
-            {
-                MY_PCA9685_SET_ANGLE(i, 140);
-            }
-        }
-                
+    {               
         vTaskDelay(100 / portTICK_PERIOD_MS);
 
         printf("%d\n", global_snake.socketCmd);

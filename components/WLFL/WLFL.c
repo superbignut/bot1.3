@@ -291,7 +291,6 @@ void my_tcp_server_task(void *pvParameters) {
         int *client_sock_ptr = (int *)malloc(sizeof(int));
         *client_sock_ptr = client_sock;
         // 9. 回调函数注册为SNAKE的成员函数
-        // if (xTaskCreate(client_socket_task, "client_socket_task", 4096, client_sock_ptr, 5, NULL) != pdPASS) {
         if (xTaskCreate(snake_socket_CB, "client_socket_task", 4096, client_sock_ptr, 5, NULL) != pdPASS) {
             ESP_LOGE(TAG, "Failed to create task");
             free(client_sock_ptr);

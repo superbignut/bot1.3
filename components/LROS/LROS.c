@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include <uros_network_interfaces.h>
+/* #include <uros_network_interfaces.h>
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
 #include <std_msgs/msg/int32.h>
@@ -148,4 +148,4 @@ void LRosInit()
             5,
             NULL);
 
-}
+} */

@@ -1,8 +1,8 @@
 idf_component_register(
-    SRCS "LROS.c" 
+    SRCS "MESH.c" 
 
     INCLUDE_DIRS "include"
 
-    REQUIRES driver WLFL
+    REQUIRES driver esp_wifi
     
     PRIV_REQUIRES)
