@@ -32,7 +32,7 @@ extern SNAKE global_snake;
 
 extern void adc_main(void);
 
-extern void mesh_main(void);
+extern void mqtt_main(void);
 
 extern "C" void app_main(void)
 {   
@@ -59,7 +59,7 @@ extern "C" void app_main(void)
     // 进行 adc读取
     // adc_main(); 
 
-    mesh_main();
+    // mesh_main();
 
     printf("Compile Successfully!\n");
 
