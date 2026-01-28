@@ -16,14 +16,14 @@
 #include "nvs_flash.h"
 #include "esp_event.h"
 #include "esp_netif.h"
-
+#include "WLFL.h"
 #include "esp_log.h"
 #include "mqtt_client.h"
 
-#define LTL_CONFIG_BROKER_URL "mqtt://broker.example.com:1883"  
+#define LTL_CONFIG_BROKER_URL "mqtt://192.168.1.11:1883"  
 
 
-static const char *TAG = "mqtt_example";
+static const char *TAG = "mqtt_snake";
 
 
 static void log_error_if_nonzero(const char *message, int error_code)
@@ -63,23 +63,26 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
         msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos1");
         ESP_LOGI(TAG, "sent unsubscribe successful, msg_id=%d", msg_id);
+
+        msg_id = esp_mqtt_client_publish(client, "/topic/snake_speed", "1000", 0, 1, 0);
+        ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
         break;
-    case MQTT_EVENT_DISCONNECTED:
+    case MQTT_EVENT_DISCONNECTED: // 断开连接
         ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
         break;
 
-    case MQTT_EVENT_SUBSCRIBED:
+    case MQTT_EVENT_SUBSCRIBED: // 订阅成功时触发
         ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
         msg_id = esp_mqtt_client_publish(client, "/topic/qos0", "data", 0, 0, 0);
         ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
         break;
-    case MQTT_EVENT_UNSUBSCRIBED:
+    case MQTT_EVENT_UNSUBSCRIBED: // 取消连接时
         ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
         break;
-    case MQTT_EVENT_PUBLISHED:
+    case MQTT_EVENT_PUBLISHED: // 发布时
         ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
         break;
-    case MQTT_EVENT_DATA:
+    case MQTT_EVENT_DATA: // 接受数据时触发
         ESP_LOGI(TAG, "MQTT_EVENT_DATA");
         printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
         printf("DATA=%.*s\r\n", event->data_len, event->data);
@@ -100,19 +103,23 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     }
 }
 
-static void mqtt_app_start(void)
+static esp_mqtt_client_handle_t mqtt_app_start(void)
 {
     esp_mqtt_client_config_t mqtt_cfg{};
 
     mqtt_cfg.broker.address.uri = LTL_CONFIG_BROKER_URL;
 
+    ESP_LOGI(TAG, "mqtt url: %s", mqtt_cfg.broker.address.uri);
+
     esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(client);
+    
+    return client;
 }
 
-static inline esp_err_t example_connect(void) {return ESP_OK;}
+// static inline esp_err_t example_connect(void) {return ESP_OK;}
 
 void mqtt_main(void)
 {
@@ -128,15 +135,19 @@ void mqtt_main(void)
     esp_log_level_set("transport", ESP_LOG_VERBOSE);
     esp_log_level_set("outbox", ESP_LOG_VERBOSE);
 
-    ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    wlfl_init_sta(); // wifi初始化
 
-    /* This helper function configures Wi-Fi or Ethernet, as selected in menuconfig.
-     * Read "Establishing Wi-Fi or Ethernet Connection" section in
-     * examples/protocols/README.md for more information about this function.
-     */
-    ESP_ERROR_CHECK(example_connect());
+    esp_mqtt_client_handle_t client = mqtt_app_start(); // mqtt初始化
+    // sudo ufw allow 1883/tcp  # 开放 MQTT 端口
+    // sudo ufw reload           # 重新加载规则
 
-    mqtt_app_start();
+    // 循环发送
+    while(true){
+        int random_number = rand() % 1000;
+        char random_str[10]; // 确保缓冲区足够大以容纳转换后的字符串
+        sprintf(random_str, "%d", random_number);
+        esp_mqtt_client_publish(client, "/topic/snake_speed", random_str, 0, 1, 0);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+    
 }

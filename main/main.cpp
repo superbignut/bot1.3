@@ -61,6 +61,8 @@ extern "C" void app_main(void)
 
     // mesh_main();
 
+    mqtt_main();
+
     printf("Compile Successfully!\n");
 
     while(1)
